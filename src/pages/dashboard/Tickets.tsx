@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { AddTicketModal } from "@/components/modals/add-ticket-modal";
 
 const tickets = [
   {
