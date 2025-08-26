@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/auth-guard";
 import Index from "./pages/Index";
+import Integrations from "./pages/Integrations";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -34,6 +35,7 @@ const App = () => (
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
+              <Route path="/integrations" element={<Integrations />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />

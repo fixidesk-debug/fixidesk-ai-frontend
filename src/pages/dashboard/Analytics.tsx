@@ -1,45 +1,205 @@
 import { motion } from "framer-motion";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  MessageSquare,
+  Clock,
+  Star,
+  Calendar,
+  Download,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  AreaChart,
+  Area,
+} from "recharts";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
-const ticketData = [
-  { name: "Mon", resolved: 12, created: 15 },
-  { name: "Tue", resolved: 19, created: 22 },
-  { name: "Wed", resolved: 8, created: 11 },
-  { name: "Thu", resolved: 25, created: 20 },
-  { name: "Fri", resolved: 32, created: 28 },
-  { name: "Sat", resolved: 18, created: 14 },
-  { name: "Sun", resolved: 15, created: 12 },
+// Enhanced metrics data
+const keyMetrics = [
+  {
+    title: "Total Tickets",
+    value: "1,247",
+    change: "+12.3%",
+    changeType: "increase" as const,
+    icon: MessageSquare,
+    description: "vs last month",
+  },
+  {
+    title: "Avg Response Time",
+    value: "1.2h",
+    change: "-23.1%",
+    changeType: "decrease" as const,
+    icon: Clock,
+    description: "faster than last month",
+  },
+  {
+    title: "Customer Satisfaction",
+    value: "4.8/5",
+    change: "+0.2",
+    changeType: "increase" as const,
+    icon: Star,
+    description: "rating improvement",
+  },
+  {
+    title: "Resolution Rate",
+    value: "94.2%",
+    change: "+5.1%",
+    changeType: "increase" as const,
+    icon: TrendingUp,
+    description: "vs last month",
+  },
+];
+
+// Sample data for enhanced charts
+const ticketStatusData = [
+  { name: "Open", value: 47, color: "#ef4444" },
+  { name: "In Progress", value: 23, color: "#f59e0b" },
+  { name: "Resolved", value: 156, color: "#10b981" },
+  { name: "Closed", value: 89, color: "#6b7280" },
 ];
 
 const responseTimeData = [
-  { time: "00:00", minutes: 2.4 },
-  { time: "04:00", minutes: 1.8 },
-  { time: "08:00", minutes: 3.2 },
-  { time: "12:00", minutes: 2.1 },
-  { time: "16:00", minutes: 1.5 },
-  { time: "20:00", minutes: 2.8 },
+  { day: "Mon", avgTime: 1.2, target: 2.0 },
+  { day: "Tue", avgTime: 0.8, target: 2.0 },
+  { day: "Wed", avgTime: 1.5, target: 2.0 },
+  { day: "Thu", avgTime: 0.9, target: 2.0 },
+  { day: "Fri", avgTime: 1.1, target: 2.0 },
+  { day: "Sat", avgTime: 2.3, target: 2.0 },
+  { day: "Sun", avgTime: 1.8, target: 2.0 },
+];
+
+const volumeData = [
+  { month: "Jan", tickets: 245, calls: 67, satisfaction: 4.6 },
+  { month: "Feb", tickets: 289, calls: 89, satisfaction: 4.7 },
+  { month: "Mar", tickets: 167, calls: 45, satisfaction: 4.5 },
+  { month: "Apr", tickets: 198, calls: 78, satisfaction: 4.8 },
+  { month: "May", tickets: 334, calls: 112, satisfaction: 4.9 },
+  { month: "Jun", tickets: 267, calls: 94, satisfaction: 4.8 },
+];
+
+const ticketData = [
+  { name: "Mon", created: 15, resolved: 12 },
+  { name: "Tue", created: 22, resolved: 19 },
+  { name: "Wed", created: 11, resolved: 8 },
+  { name: "Thu", created: 20, resolved: 25 },
+  { name: "Fri", created: 28, resolved: 32 },
+  { name: "Sat", created: 14, resolved: 18 },
+  { name: "Sun", created: 12, resolved: 15 },
 ];
 
 const satisfactionData = [
-  { name: "Excellent", value: 65, color: "#10B981" },
-  { name: "Good", value: 28, color: "#3B82F6" },
-  { name: "Average", value: 5, color: "#F59E0B" },
-  { name: "Poor", value: 2, color: "#EF4444" },
+  { name: "Excellent (5)", value: 65, color: "#10b981" },
+  { name: "Good (4)", value: 28, color: "#3b82f6" },
+  { name: "Average (3)", value: 5, color: "#f59e0b" },
+  { name: "Poor (1-2)", value: 2, color: "#ef4444" },
 ];
 
 export default function Analytics() {
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold">
-            Analytics
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-muted-foreground mt-2">
-            Performance insights and customer support metrics
-          </motion.p>
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-3xl font-bold"
+            >
+              Analytics Dashboard
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-muted-foreground mt-2"
+            >
+              Track performance, analyze trends, and optimize your support operations
+            </motion.p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Select defaultValue="30d">
+              <SelectTrigger className="w-[140px]">
+                <Calendar className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 90 days</SelectItem>
+                <SelectItem value="1y">Last year</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
+        </div>
+
+        {/* Key Metrics */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {keyMetrics.map((metric, index) => (
+            <motion.div
+              key={metric.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="transition-all duration-300 hover:shadow-beautiful border-border/50 hover:border-primary/20">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{metric.title}</CardTitle>
+                  <metric.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{metric.value}</div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                    {metric.changeType === "increase" ? (
+                      <ArrowUpRight className="h-3 w-3 text-success" />
+                    ) : (
+                      <ArrowDownRight className="h-3 w-3 text-success" />
+                    )}
+                    <span className="text-success">
+                      {metric.change}
+                    </span>
+                    <span>{metric.description}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -71,10 +231,11 @@ export default function Analytics() {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={responseTimeData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
+                  <XAxis dataKey="day" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="minutes" stroke="hsl(var(--primary))" strokeWidth={2} />
+                  <Line type="monotone" dataKey="avgTime" stroke="hsl(var(--primary))" strokeWidth={2} />
+                  <Line type="monotone" dataKey="target" stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
