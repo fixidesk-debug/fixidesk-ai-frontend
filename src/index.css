@@ -163,19 +163,25 @@ All colors MUST be HSL. Beautiful, modern design with teal/blue accents.
   }
 
   .animate-marquee {
-    animation: marquee 40s linear infinite;
+    animation: marquee 45s linear infinite;
   }
 
   /* Responsive marquee speeds */
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     .animate-marquee {
-      animation: marquee 30s linear infinite;
+      animation: marquee 40s linear infinite;
     }
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
     .animate-marquee {
-      animation: marquee 25s linear infinite;
+      animation: marquee 35s linear infinite;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .animate-marquee {
+      animation: marquee 30s linear infinite;
     }
   }
 }
