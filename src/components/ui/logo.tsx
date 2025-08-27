@@ -17,13 +17,13 @@ export function Logo({ size = "md", clickable = true, className }: LogoProps) {
   const logoContent = (
     <div className={cn("flex items-center gap-2", className)}>
       <img 
-        src="/fixidesk-logo-light.png"
-        alt="FixiDesk Logo"
+        src="/fixidesk-logo-light.svg"
+        alt="FixiDesk - AI-powered customer service"
         className={cn(sizeClasses[size], "block dark:hidden")}
       />
       <img 
-        src="/fixidesk-logo-dark.png"
-        alt="FixiDesk Logo"
+        src="/fixidesk-logo-dark.svg"
+        alt="FixiDesk - AI-powered customer service"
         className={cn(sizeClasses[size], "hidden dark:block")}
       />
     </div>
