@@ -5,17 +5,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useI18n } from "@/lib/i18n";
 
 const navigation = [
-  { name: "Features", href: "#features" },
-  { name: "How It Works", href: "#how-it-works" },
-  { name: "Pricing", href: "#pricing" },
-  { name: "Integrations", href: "#integrations" },
-  { name: "Contact", href: "#contact" },
+  { key: "nav.features", href: "#features" },
+  { key: "nav.how", href: "#how-it-works" },
+  { key: "nav.pricing", href: "#pricing" },
+  { key: "nav.integrations", href: "#integrations" },
+  { key: "nav.contact", href: "#contact" },
 ];
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useI18n();
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -29,11 +32,11 @@ export function Navbar() {
         <div className="hidden lg:flex lg:gap-x-8">
           {navigation.map((item) => (
             <a
-              key={item.name}
+              key={item.key}
               href={item.href}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              {item.name}
+              {t(item.key)}
             </a>
           ))}
         </div>
@@ -41,17 +44,19 @@ export function Navbar() {
         {/* Desktop CTA */}
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4 lg:items-center">
           <ThemeToggle />
+          <LanguageToggle />
           <Button variant="ghost" asChild>
-            <Link to="/login">Log in</Link>
+            <Link to="/login">{t("nav.login")}</Link>
           </Button>
           <Button variant="hero" asChild>
-            <Link to="/signup">Start Free Trial</Link>
+            <Link to="/signup">{t("nav.signup")}</Link>
           </Button>
         </div>
 
         {/* Mobile menu button */}
         <div className="flex lg:hidden items-center gap-2">
           <ThemeToggle />
+          <LanguageToggle />
           <Button
             variant="ghost"
             size="icon"
@@ -90,10 +95,10 @@ export function Navbar() {
               ))}
               <div className="pt-4 border-t border-border space-y-2">
                 <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link to="/login">Log in</Link>
+                  <Link to="/login">{t("nav.login")}</Link>
                 </Button>
                 <Button variant="hero" className="w-full" asChild>
-                  <Link to="/signup">Start Free Trial</Link>
+                  <Link to="/signup">{t("nav.signup")}</Link>
                 </Button>
               </div>
             </div>

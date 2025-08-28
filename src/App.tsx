@@ -2,42 +2,61 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AuthGuard } from "@/components/auth-guard";
-import Index from "./pages/Index";
-import Integrations from "./pages/Integrations";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
-import About from "./pages/About";
-import Blog from "./pages/Blog";
-import Careers from "./pages/Careers";
-import Support from "./pages/Support";
-import Security from "./pages/Security";
-import Status from "./pages/Status";
-import Dashboard from "./pages/dashboard/Dashboard";
-import Tickets from "./pages/dashboard/Tickets";
-import TicketDetail from "./pages/dashboard/TicketDetail";
-import CallAssistant from "./pages/dashboard/CallAssistant";
-import ChatWidget from "./pages/dashboard/ChatWidget";
-import Analytics from "./pages/dashboard/Analytics";
-import Settings from "./pages/dashboard/Settings";
-import TermsOfService from "./pages/legal/TermsOfService";
-import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
-import NotFound from "./pages/NotFound";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useEffect } from "react";
+import { trackPageView } from "@/lib/analytics";
+import { I18nProvider } from "@/lib/i18n";
+import { Suspense, lazy } from "react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+const Index = lazy(() => import("./pages/Index"));
+const Integrations = lazy(() => import("./pages/Integrations"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const About = lazy(() => import("./pages/About"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Careers = lazy(() => import("./pages/Careers"));
+const Support = lazy(() => import("./pages/Support"));
+const Security = lazy(() => import("./pages/Security"));
+const Status = lazy(() => import("./pages/Status"));
+const Dashboard = lazy(() => import("./pages/dashboard/Dashboard"));
+const Tickets = lazy(() => import("./pages/dashboard/Tickets"));
+const TicketDetail = lazy(() => import("./pages/dashboard/TicketDetail"));
+const CallAssistant = lazy(() => import("./pages/dashboard/CallAssistant"));
+const ChatWidget = lazy(() => import("./pages/dashboard/ChatWidget"));
+const Analytics = lazy(() => import("./pages/dashboard/Analytics"));
+const Settings = lazy(() => import("./pages/dashboard/Settings"));
+const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
+
+function RouteTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="fixidesk-theme">
+      <I18nProvider>
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:bg-background focus:text-foreground focus:px-3 focus:py-2 focus:rounded-md z-50">Skip to content</a>
+            <Suspense fallback={<div className="fixed inset-0 grid place-items-center"><LoadingSpinner size="lg" /></div>}>
+            <ErrorBoundary>
+            <RouteTracker />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Index />} />
@@ -67,9 +86,12 @@ const App = () => (
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </ErrorBoundary>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
+      </I18nProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

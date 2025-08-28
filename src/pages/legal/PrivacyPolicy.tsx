@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/ui/logo";
 import { ArrowLeft } from "lucide-react";
+import { SITE_CONTACT } from "@/lib/site";
+import { ContactBlock } from "@/components/ui/contact-block";
 
 export default function PrivacyPolicy() {
   return (
@@ -150,10 +152,9 @@ export default function PrivacyPolicy() {
                   If you have any questions about this Privacy Policy, please contact us:
                 </p>
                 <div className="bg-muted p-4 rounded-lg mt-4">
-                  <p className="font-medium">FixiDesk Privacy Team</p>
-                  <p className="text-muted-foreground">Email: privacy@fixidesk.com</p>
-                  <p className="text-muted-foreground">Phone: +1 (555) 123-4567</p>
-                  <p className="text-muted-foreground">Address: 123 Tech Street, San Francisco, CA 94105</p>
+                  <p className="font-medium mb-2">FixiDesk Privacy Team</p>
+                  <ContactBlock showLabels={false} />
+                  <p className="text-muted-foreground mt-2">Address: 123 Tech Street, San Francisco, CA 94105</p>
                 </div>
               </section>
             </div>

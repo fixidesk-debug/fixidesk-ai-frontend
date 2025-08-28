@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 export function ContactSection() {
+  const { t } = useI18n();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
@@ -23,8 +25,8 @@ export function ContactSection() {
     setIsSubmitted(true);
     
     toast({
-      title: "Message sent!",
-      description: "We'll get back to you within 24 hours.",
+      title: t("contact.toast.title") || "Message sent!",
+      description: t("contact.toast.desc") || "We'll get back to you within 24 hours.",
     });
 
     // Reset form after 3 seconds
@@ -43,29 +45,28 @@ export function ContactSection() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl mb-6">
-              Ready to Transform Your Support?
+              {t("contact.header")}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Get started with FixiDesk today. Book a demo, start your free trial, 
-              or contact our team for a personalized consultation.
+              {t("contact.sub")}
             </p>
 
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-success" />
-                <span className="text-muted-foreground">14-day free trial</span>
+                <span className="text-muted-foreground">{t("contact.b1")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-success" />
-                <span className="text-muted-foreground">No credit card required</span>
+                <span className="text-muted-foreground">{t("contact.b2")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-success" />
-                <span className="text-muted-foreground">Setup in under 10 minutes</span>
+                <span className="text-muted-foreground">{t("contact.b3")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-success" />
-                <span className="text-muted-foreground">24/7 support included</span>
+                <span className="text-muted-foreground">{t("contact.b4")}</span>
               </div>
             </div>
           </motion.div>
@@ -79,7 +80,7 @@ export function ContactSection() {
           >
             <Card className="shadow-luxurious border-border/50">
               <CardHeader>
-                <CardTitle className="text-2xl">Get in Touch</CardTitle>
+                <CardTitle className="text-2xl">{t("contact.form.title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {!isSubmitted ? (
@@ -87,7 +88,7 @@ export function ContactSection() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label htmlFor="firstName" className="text-sm font-medium">
-                          First Name
+                          {t("contact.form.first")}
                         </label>
                         <Input
                           id="firstName"
@@ -98,7 +99,7 @@ export function ContactSection() {
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="lastName" className="text-sm font-medium">
-                          Last Name
+                          {t("contact.form.last")}
                         </label>
                         <Input
                           id="lastName"
@@ -111,7 +112,7 @@ export function ContactSection() {
 
                     <div className="space-y-2">
                       <label htmlFor="email" className="text-sm font-medium">
-                        Email
+                        {t("contact.form.email")}
                       </label>
                       <Input
                         id="email"
@@ -124,7 +125,7 @@ export function ContactSection() {
 
                     <div className="space-y-2">
                       <label htmlFor="company" className="text-sm font-medium">
-                        Company
+                        {t("contact.form.company")}
                       </label>
                       <Input
                         id="company"
@@ -135,12 +136,12 @@ export function ContactSection() {
 
                     <div className="space-y-2">
                       <label htmlFor="message" className="text-sm font-medium">
-                        Message
+                        {t("contact.form.message")}
                       </label>
                       <Textarea
                         id="message"
                         name="message"
-                        placeholder="Tell us about your needs..."
+                        placeholder={t("contact.form.placeholder")}
                         className="min-h-[120px] rounded-lg"
                         required
                       />
@@ -154,10 +155,10 @@ export function ContactSection() {
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
-                        "Sending..."
+                        t("contact.form.sending")
                       ) : (
                         <>
-                          Send Message
+                          {t("contact.form.cta")}
                           <Send className="ml-2 h-4 w-4" />
                         </>
                       )}
@@ -166,9 +167,9 @@ export function ContactSection() {
                 ) : (
                   <div className="text-center py-8">
                     <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t("contact.form.sentTitle")}</h3>
                     <p className="text-muted-foreground">
-                      Thank you for contacting us. We'll get back to you within 24 hours.
+                      {t("contact.form.sentDesc")}
                     </p>
                   </div>
                 )}

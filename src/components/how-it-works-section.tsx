@@ -1,29 +1,31 @@
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useI18n } from "@/lib/i18n";
 
 const steps = [
   {
     step: "01",
-    title: "Connect Your Channels",
-    description: "Integrate FixiDesk with your existing email, chat, and social media channels in just a few clicks.",
-    features: ["Email integration", "Live chat widget", "Social media sync", "API connections"]
+    titleKey: "how.step1.title",
+    descriptionKey: "how.step1.desc",
+    featuresKeys: ["how.step1.f1", "how.step1.f2", "how.step1.f3", "how.step1.f4"]
   },
   {
     step: "02",
-    title: "Train Your AI Assistant",
-    description: "Upload your knowledge base, FAQs, and product documentation to train the AI on your specific business.",
-    features: ["Knowledge base import", "FAQ training", "Custom responses", "Brand voice tuning"]
+    titleKey: "how.step2.title",
+    descriptionKey: "how.step2.desc",
+    featuresKeys: ["how.step2.f1", "how.step2.f2", "how.step2.f3", "how.step2.f4"]
   },
   {
     step: "03",
-    title: "Automate & Monitor",
-    description: "Let FixiDesk handle routine queries automatically while your team focuses on complex issues.",
-    features: ["Automated responses", "Smart escalation", "Performance analytics", "Continuous improvement"]
+    titleKey: "how.step3.title",
+    descriptionKey: "how.step3.desc",
+    featuresKeys: ["how.step3.f1", "how.step3.f2", "how.step3.f3", "how.step3.f4"]
   }
 ];
 
 export function HowItWorksSection() {
+  const { t } = useI18n();
   return (
     <section id="how-it-works" className="py-20 lg:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -36,7 +38,7 @@ export function HowItWorksSection() {
             viewport={{ once: true }}
             className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
           >
-            How FixiDesk Works
+            {t("how.header")}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -45,8 +47,7 @@ export function HowItWorksSection() {
             viewport={{ once: true }}
             className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto"
           >
-            Get started in minutes with our simple three-step process. 
-            No technical expertise required.
+            {t("how.sub")}
           </motion.p>
         </div>
 
@@ -78,17 +79,17 @@ export function HowItWorksSection() {
                   </div>
 
                   {/* Content */}
-                  <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
+                  <h3 className="text-xl font-semibold mb-4">{t(step.titleKey)}</h3>
                   <p className="text-muted-foreground mb-6 leading-relaxed">
-                    {step.description}
+                    {t(step.descriptionKey)}
                   </p>
 
                   {/* Features */}
                   <ul className="space-y-3">
-                    {step.features.map((feature) => (
-                      <li key={feature} className="flex items-center text-sm">
+                    {step.featuresKeys.map((featureKey) => (
+                      <li key={featureKey} className="flex items-center text-sm">
                         <CheckCircle className="h-4 w-4 text-success mr-3 flex-shrink-0" />
-                        <span className="text-muted-foreground">{feature}</span>
+                        <span className="text-muted-foreground">{t(featureKey)}</span>
                       </li>
                     ))}
                   </ul>

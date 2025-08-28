@@ -13,6 +13,7 @@ export function Toaster() {
 
   return (
     <ToastProvider>
+      <div aria-live="polite" aria-atomic="true" className="sr-only" />
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>

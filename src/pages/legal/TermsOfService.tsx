@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/ui/logo";
 import { ArrowLeft } from "lucide-react";
+import { SITE_CONTACT } from "@/lib/site";
+import { ContactBlock } from "@/components/ui/contact-block";
 
 export default function TermsOfService() {
   return (
@@ -127,9 +129,8 @@ export default function TermsOfService() {
                   If you have any questions about these Terms of Service, please contact us at:
                 </p>
                 <div className="bg-muted p-4 rounded-lg mt-4">
-                  <p className="font-medium">FixiDesk Support</p>
-                  <p className="text-muted-foreground">Email: legal@fixidesk.com</p>
-                  <p className="text-muted-foreground">Phone: +1 (555) 123-4567</p>
+                  <p className="font-medium mb-2">FixiDesk Support</p>
+                  <ContactBlock showLabels={false} />
                 </div>
               </section>
             </div>

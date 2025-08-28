@@ -5,12 +5,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Star, ArrowRight, Zap, Shield, Clock } from "lucide-react";
+import { trackClick } from "@/lib/analytics";
+import { BsMicrosoftTeams } from "react-icons/bs";
+import { 
+  SiSlack, 
+  SiWhatsapp,
+  SiMessenger,
+  SiInstagram,
+  SiHubspot,
+  SiSalesforce,
+  SiZendesk,
+  SiZapier 
+} from "react-icons/si";
 
 const integrations = [
   {
     name: "Slack",
     description: "Receive ticket notifications and manage support directly from Slack",
-    logo: "https://via.placeholder.com/80x80/4A154B/FFFFFF?text=Slack",
+    icon: <SiSlack className="h-10 w-10 text-[#4A154B]" />,
     category: "Communication",
     features: ["Real-time notifications", "Direct ticket management", "Team collaboration"],
     pricing: "Free",
@@ -19,7 +31,7 @@ const integrations = [
   {
     name: "Microsoft Teams",
     description: "Seamless integration with your Microsoft Teams workspace",
-    logo: "https://via.placeholder.com/80x80/6264A7/FFFFFF?text=Teams",
+    icon: <BsMicrosoftTeams className="h-10 w-10 text-[#6264A7]" />,
     category: "Communication",
     features: ["Team notifications", "Shared channels", "File sharing"],
     pricing: "Free",
@@ -28,7 +40,7 @@ const integrations = [
   {
     name: "WhatsApp Business",
     description: "Handle customer support through WhatsApp Business API",
-    logo: "https://via.placeholder.com/80x80/25D366/FFFFFF?text=WhatsApp",
+    icon: <SiWhatsapp className="h-10 w-10 text-[#25D366]" />,
     category: "Messaging",
     features: ["Business API", "Rich media support", "Auto-responses"],
     pricing: "Premium",
@@ -37,7 +49,7 @@ const integrations = [
   {
     name: "Facebook Messenger",
     description: "Connect with customers on Facebook Messenger",
-    logo: "https://via.placeholder.com/80x80/0084FF/FFFFFF?text=Messenger",
+    icon: <SiMessenger className="h-10 w-10 text-[#0084FF]" />,
     category: "Messaging",
     features: ["Automated responses", "Rich media", "Customer profiles"],
     pricing: "Free",
@@ -46,7 +58,7 @@ const integrations = [
   {
     name: "Instagram DM",
     description: "Manage Instagram direct messages from your dashboard",
-    logo: "https://via.placeholder.com/80x80/E4405F/FFFFFF?text=Instagram",
+    icon: <SiInstagram className="h-10 w-10 text-[#E4405F]" />,
     category: "Social Media",
     features: ["DM management", "Story responses", "Media handling"],
     pricing: "Premium",
@@ -54,37 +66,37 @@ const integrations = [
   },
   {
     name: "HubSpot",
-    description: "Sync customer data and tickets with your HubSpot CRM",
-    logo: "https://via.placeholder.com/80x80/FF7A59/FFFFFF?text=HubSpot",
+    description: "Sync customer data and tickets with HubSpot CRM",
+    icon: <SiHubspot className="h-10 w-10 text-[#FF7A59]" />,
     category: "CRM",
-    features: ["Contact sync", "Deal tracking", "Activity logging"],
-    pricing: "Free",
+    features: ["Contact sync", "Deal tracking", "Email marketing"],
+    pricing: "Premium",
     popular: true,
   },
   {
     name: "Salesforce",
-    description: "Enterprise-grade integration with Salesforce CRM",
-    logo: "https://via.placeholder.com/80x80/00A1E0/FFFFFF?text=Salesforce",
+    description: "Connect with Salesforce for advanced CRM features",
+    icon: <SiSalesforce className="h-10 w-10 text-[#00A1E0]" />,
     category: "CRM",
-    features: ["Custom objects", "Workflow automation", "Advanced reporting"],
+    features: ["Lead management", "Opportunity tracking", "Custom objects"],
     pricing: "Enterprise",
     popular: true,
   },
   {
     name: "Zendesk",
-    description: "Migrate from or sync with your existing Zendesk setup",
-    logo: "https://via.placeholder.com/80x80/03363D/FFFFFF?text=Zendesk",
+    description: "Integrate with Zendesk Support and Guide",
+    icon: <SiZendesk className="h-10 w-10 text-[#03363D]" />,
     category: "Help Desk",
-    features: ["Data migration", "Ticket sync", "Agent transfer"],
+    features: ["Ticket sync", "Knowledge base", "Customer portal"],
     pricing: "Premium",
     popular: false,
   },
   {
     name: "Zapier",
-    description: "Connect with 5000+ apps through Zapier automation",
-    logo: "https://via.placeholder.com/80x80/FF4A00/FFFFFF?text=Zapier",
+    description: "Connect with 5000+ apps through Zapier",
+    icon: <SiZapier className="h-10 w-10 text-[#FF4A00]" />,
     category: "Automation",
-    features: ["5000+ app connections", "Custom workflows", "Triggers & actions"],
+    features: ["Multi-step Zaps", "Webhooks", "Custom integrations"],
     pricing: "Free",
     popular: true,
   },
@@ -185,11 +197,9 @@ export default function Integrations() {
                     
                     <CardHeader>
                       <div className="flex items-start gap-4">
-                        <img
-                          src={integration.logo}
-                          alt={integration.name}
-                          className="w-12 h-12 rounded-lg border bg-card"
-                        />
+                        <div className="flex-shrink-0 h-20 w-20 flex items-center justify-center rounded-lg bg-muted/50">
+                          {integration.icon}
+                        </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-lg">{integration.name}</CardTitle>
@@ -254,7 +264,7 @@ export default function Integrations() {
                     Our team can build custom integrations for your specific needs. 
                     Connect any API or service to FixiDesk with our enterprise solutions.
                   </p>
-                  <Button variant="secondary" size="lg">
+                  <Button variant="secondary" size="lg" onClick={() => trackClick("contact-sales", { from: "integrations-hero" })}>
                     Contact Sales
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>

@@ -129,6 +129,8 @@ const About = () => {
                 <img
                   src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop"
                   alt="Team collaboration"
+                  loading="lazy"
+                  decoding="async"
                   className="rounded-lg shadow-lg w-full"
                 />
               </motion.div>
@@ -188,6 +190,8 @@ const About = () => {
                       <img
                         src={member.image}
                         alt={member.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
                       />
                       <h3 className="text-xl font-semibold text-foreground mb-2">{member.name}</h3>

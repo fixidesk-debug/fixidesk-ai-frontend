@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { Search, MessageCircle, Book, Video, Mail, Phone, Clock, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Support = () => {
   const supportOptions = [
@@ -96,6 +98,48 @@ const Support = () => {
       category: "Team Management"
     }
   ];
+
+  const { toast } = useToast();
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  function update<K extends keyof typeof form>(key: K, value: string) {
+    setForm(prev => ({ ...prev, [key]: value }));
+  }
+
+  function validateEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
+      toast({ title: "Missing information", description: "Please fill in all fields.", variant: "destructive" });
+      return;
+    }
+    if (!validateEmail(form.email)) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // Simulate send
+      await new Promise(res => setTimeout(res, 600));
+      toast({ title: "Message sent", description: "We will get back to you within 4 hours." });
+      setForm({ firstName: "", lastName: "", email: "", subject: "", message: "" });
+    } catch (err) {
+      toast({ title: "Could not send message", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -275,19 +319,19 @@ const Support = () => {
                     </p>
                   </div>
                   
-                  <form className="space-y-6">
+                  <form className="space-y-6" onSubmit={onSubmit} noValidate>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium text-foreground mb-2 block">
                           First Name
                         </label>
-                        <Input placeholder="Enter your first name" />
+                        <Input placeholder="Enter your first name" value={form.firstName} onChange={(e) => update("firstName", e.target.value)} required />
                       </div>
                       <div>
                         <label className="text-sm font-medium text-foreground mb-2 block">
                           Last Name
                         </label>
-                        <Input placeholder="Enter your last name" />
+                        <Input placeholder="Enter your last name" value={form.lastName} onChange={(e) => update("lastName", e.target.value)} required />
                       </div>
                     </div>
                     
@@ -295,14 +339,14 @@ const Support = () => {
                       <label className="text-sm font-medium text-foreground mb-2 block">
                         Email
                       </label>
-                      <Input type="email" placeholder="Enter your email" />
+                      <Input type="email" placeholder="Enter your email" value={form.email} onChange={(e) => update("email", e.target.value)} required />
                     </div>
                     
                     <div>
                       <label className="text-sm font-medium text-foreground mb-2 block">
                         Subject
                       </label>
-                      <Input placeholder="What's this about?" />
+                      <Input placeholder="What's this about?" value={form.subject} onChange={(e) => update("subject", e.target.value)} required />
                     </div>
                     
                     <div>
@@ -312,10 +356,13 @@ const Support = () => {
                       <Textarea 
                         placeholder="Describe your issue or question in detail..."
                         className="min-h-[120px]"
+                        value={form.message}
+                        onChange={(e) => update("message", e.target.value)}
+                        required
                       />
                     </div>
                     
-                    <Button size="lg" className="w-full">
+                    <Button size="lg" className="w-full" type="submit" disabled={submitting}>
                       Send Message
                     </Button>
                   </form>

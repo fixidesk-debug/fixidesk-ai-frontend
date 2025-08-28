@@ -19,11 +19,15 @@ export function Logo({ size = "md", clickable = true, className }: LogoProps) {
       <img 
         src="/fixidesk-logo-light.svg"
         alt="FixiDesk - AI-powered customer service"
+        loading="lazy"
+        decoding="async"
         className={cn(sizeClasses[size], "block dark:hidden")}
       />
       <img 
         src="/fixidesk-logo-dark.svg"
         alt="FixiDesk - AI-powered customer service"
+        loading="lazy"
+        decoding="async"
         className={cn(sizeClasses[size], "hidden dark:block")}
       />
     </div>

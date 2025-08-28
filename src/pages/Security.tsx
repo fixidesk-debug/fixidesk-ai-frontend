@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Shield, Lock, Eye, Server, FileCheck, Users, Globe, CheckCircle } from "lucide-react";
+import { SITE_CONTACT } from "@/lib/site";
+import { ContactBlock } from "@/components/ui/contact-block";
 
 const Security = () => {
   const securityFeatures = [
@@ -289,9 +291,9 @@ const Security = () => {
                 <Button size="lg">Contact Security Team</Button>
                 <Button variant="outline" size="lg">Report Security Issue</Button>
               </div>
-              <p className="text-sm text-muted-foreground mt-4">
-                For urgent security matters, email us at <span className="text-primary">security@fixidesk.com</span>
-              </p>
+              <div className="mt-4 inline-block text-left">
+                <ContactBlock showLabels={false} />
+              </div>
             </motion.div>
           </div>
         </section>

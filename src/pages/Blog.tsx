@@ -133,6 +133,8 @@ const Blog = () => {
                     <img
                       src={blogPosts[0].image}
                       alt={blogPosts[0].title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover min-h-[300px]"
                     />
                     <Badge className="absolute top-4 left-4">Featured</Badge>
@@ -182,6 +184,8 @@ const Blog = () => {
                       <img
                         src={post.image}
                         alt={post.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <Badge variant="secondary" className="absolute top-3 left-3">
