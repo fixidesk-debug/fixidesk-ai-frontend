@@ -11,6 +11,12 @@ import Integrations from "./pages/Integrations";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
+import About from "./pages/About";
+import Blog from "./pages/Blog";
+import Careers from "./pages/Careers";
+import Support from "./pages/Support";
+import Security from "./pages/Security";
+import Status from "./pages/Status";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Tickets from "./pages/dashboard/Tickets";
 import TicketDetail from "./pages/dashboard/TicketDetail";
@@ -39,6 +45,13 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/help" element={<Support />} />
+              <Route path="/security" element={<Security />} />
+              <Route path="/status" element={<Status />} />
               <Route path="/legal/terms" element={<TermsOfService />} />
               <Route path="/legal/privacy" element={<PrivacyPolicy />} />
               
