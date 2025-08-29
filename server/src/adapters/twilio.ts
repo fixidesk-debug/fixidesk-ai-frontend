@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
 import { getSupabaseClient } from '../utils/db';
 
 async function webhook(req: Request, res: Response) {
@@ -12,7 +13,7 @@ async function webhook(req: Request, res: Response) {
   if (event === 'completed') {
     const supabase = getSupabaseClient();
     const org_id = req.query.org_id as string;
-    await supabase.from('tickets').insert({ id: crypto.randomUUID(), org_id, inbox_id: null, customer_id: null, subject: 'Call Summary', status: 'closed', priority: 'normal' });
+    await supabase.from('tickets').insert({ id: randomUUID(), org_id, inbox_id: null, customer_id: null, subject: 'Call Summary', status: 'closed', priority: 'normal' });
     return res.json({ ok: true });
   }
   return res.json({ ok: true });
