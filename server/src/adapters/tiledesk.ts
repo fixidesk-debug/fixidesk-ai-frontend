@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
 import { getSupabaseClient } from '../utils/db';
 
 async function webhook(req: Request, res: Response) {
@@ -9,7 +10,7 @@ async function webhook(req: Request, res: Response) {
     return res.json({ ok: true });
   }
   if (type === 'handoff') {
-    const ticket_id = crypto.randomUUID();
+    const ticket_id = randomUUID();
     await supabase.from('tickets').insert({ id: ticket_id, org_id, inbox_id: null, customer_id: null, subject: 'Tiledesk Escalation', status: 'open', priority: 'normal', meta: { escalation_reason: req.body?.reason || 'unknown', transcript: req.body?.transcript || '' } });
     return res.json({ ok: true, ticket_id });
   }
