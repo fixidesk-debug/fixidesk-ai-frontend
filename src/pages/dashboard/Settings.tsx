@@ -23,6 +23,7 @@ import {
   Zap
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { useToast } from "@/hooks/use-toast";
 
 const integrations = [
@@ -62,19 +63,39 @@ const integrations = [
 
 export default function Settings() {
   const { user } = useAuth();
+  const { profile, loading: profileLoading, updateProfile } = useProfile();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const handleProfileSave = async () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    
+    const firstName = (document.getElementById('first-name') as HTMLInputElement)?.value;
+    const lastName = (document.getElementById('last-name') as HTMLInputElement)?.value;
+    const companyName = (document.getElementById('company-name') as HTMLInputElement)?.value;
+    const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
+
+    const { error } = await updateProfile({
+      first_name: firstName,
+      last_name: lastName,
+      company_name: companyName,
+      phone: phone,
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    } else {
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
       });
-    }, 1000);
+    }
+    
+    setLoading(false);
   };
 
   const handleIntegrationToggle = (integrationId: string, enabled: boolean) => {
@@ -141,9 +162,9 @@ export default function Settings() {
                 <CardContent className="space-y-6">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-20 w-20">
-                      <AvatarImage src={user?.avatar} />
+                      <AvatarImage src={profile?.avatar_url || undefined} />
                       <AvatarFallback className="text-lg">
-                        {user?.name.split(' ').map(n => n[0]).join('')}
+                        {profile?.first_name?.[0]}{profile?.last_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
                     <Button variant="outline" size="sm">
@@ -154,12 +175,20 @@ export default function Settings() {
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" defaultValue={user?.name} />
+                      <Label htmlFor="first-name">First Name</Label>
+                      <Input id="first-name" defaultValue={profile?.first_name || ''} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last-name">Last Name</Label>
+                      <Input id="last-name" defaultValue={profile?.last_name || ''} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" defaultValue={user?.email} />
+                      <Input id="email" type="email" defaultValue={user?.email} disabled />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input id="phone" type="tel" defaultValue={profile?.phone || ''} />
                     </div>
                   </div>
 
@@ -198,7 +227,7 @@ export default function Settings() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="company-name">Company Name</Label>
-                      <Input id="company-name" defaultValue={user?.company} />
+                      <Input id="company-name" defaultValue={profile?.company_name || ''} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="domain">Domain</Label>

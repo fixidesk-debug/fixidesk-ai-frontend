@@ -1,22 +1,17 @@
-import { useI18n } from "@/lib/i18n-hooks";
+import { useI18n } from "@/lib/i18n";
 
 export function LanguageToggle() {
   const { locale, setLocale } = useI18n();
-
-  const toggleLanguage = () => {
-    setLocale(locale === "en" ? "hi" : "en");
-  };
-
   return (
-    <button
-      onClick={toggleLanguage}
-      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+    <select
+      aria-label="Language"
+      className="bg-transparent border rounded-md px-2 py-1 text-sm"
+      value={locale}
+      onChange={(e) => setLocale(e.target.value)}
     >
-      <span className="text-lg">
-        {locale === "en" ? "🇮🇳" : "🇺🇸"}
-      </span>
-      <span>{locale === "en" ? "हिंदी" : "English"}</span>
-    </button>
+      <option value="en">EN</option>
+      <option value="hi">HI</option>
+    </select>
   );
 }
 

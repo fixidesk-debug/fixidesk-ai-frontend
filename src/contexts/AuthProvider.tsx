@@ -1,98 +1,116 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { authApi } from '../lib/api';
-import { useToast } from '../hooks/use-toast';
-import { AuthContext } from './auth.types';
-import type { User, ApiError, AuthContextType } from './auth.types';
+import { useState, useEffect, ReactNode } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { AuthContext } from './auth-context';
 
-// Add missing type declarations
-declare global {
-  interface Window {
-    env: {
-      VITE_API_URL?: string;
-    };
-  }
-}
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      authApi.me()
-        .then(response => setUser(response.data))
-        .catch(() => localStorage.removeItem('auth_token'))
-        .finally(() => setLoading(false));
-    } else {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
       setLoading(false);
-    }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      const response = await authApi.login({ email, password });
-      const { token, user } = response.data;
-      localStorage.setItem('auth_token', token);
-      setUser(user);
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        }
+      }
+    });
+
+    if (!error) {
+      toast({
+        title: "Account created!",
+        description: "Please check your email for verification instructions.",
+      });
+    }
+
+    return { error };
+  };
+
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (!error) {
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",
       });
-    } catch (error: unknown) {
-      const apiError = error as ApiError;
-      toast({
-        title: "Login failed",
-        description: apiError.response?.data?.message || "Invalid credentials",
-        variant: "destructive",
-      });
-      throw error;
     }
-  }, [toast]);
 
-  const register = useCallback(async (data: { name: string; email: string; password: string; company: string }) => {
-    try {
-      const response = await authApi.register(data);
-      const { token, user } = response.data;
-      localStorage.setItem('auth_token', token);
-      setUser(user);
+    return { error };
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    
+    if (!error) {
       toast({
-        title: "Account created!",
-        description: "Welcome to FixiDesk. Your account has been created successfully.",
+        title: "Logged out",
+        description: "You have been successfully logged out.",
       });
-    } catch (error: unknown) {
-      const apiError = error as ApiError;
-      toast({
-        title: "Registration failed",
-        description: apiError.response?.data?.message || "Failed to create account",
-        variant: "destructive",
-      });
-      throw error;
     }
-  }, [toast]);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('auth_token');
-    setUser(null);
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
+    return { error };
+  };
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
     });
-  }, [toast]);
 
-  const value = {
-    user,
-    loading,
-    login,
-    register,
-    logout,
-    isAuthenticated: !!user,
+    if (!error) {
+      toast({
+        title: "Password reset sent",
+        description: "Check your email for password reset instructions.",
+      });
+    }
+
+    return { error };
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      session,
+      loading,
+      signUp,
+      signIn,
+      signOut,
+      resetPassword,
+      isAuthenticated: !!user,
+    }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}

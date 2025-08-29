@@ -85,12 +85,12 @@ export function Navbar() {
             <div className="px-4 py-6 space-y-4">
               {navigation.map((item) => (
                 <a
-                  key={item.name}
+                  key={item.key}
                   href={item.href}
                   className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.name}
+                  {t(item.key)}
                 </a>
               ))}
               <div className="pt-4 border-t border-border space-y-2">

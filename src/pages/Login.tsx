@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -23,9 +23,12 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const {
     register,
@@ -36,12 +39,23 @@ export default function Login() {
   });
 
   const onSubmit = async (data: LoginForm) => {
+    setIsLoading(true);
+    
     try {
-      setIsLoading(true);
-      await login(data.email, data.password);
-      navigate('/dashboard');
+      const { error } = await signIn(data.email, data.password);
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
-      // Error is already handled in the useAuth hook
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
