@@ -2,9 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '@/App';
-import { axe, toHaveNoViolations } from 'jest-axe';
-
-expect.extend(toHaveNoViolations);
+import { axe } from 'jest-axe';
 
 describe('a11y', () => {
   it('home has no obvious a11y violations', async () => {
