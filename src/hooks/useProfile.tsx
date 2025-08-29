@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -29,9 +29,9 @@ export function useProfile() {
     }
 
     fetchProfile();
-  }, [user]);
+  }, [user, fetchProfile]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -42,12 +42,12 @@ export function useProfile() {
 
       if (error) throw error;
       setProfile(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: 'No user found' };
@@ -62,8 +62,8 @@ export function useProfile() {
       
       await fetchProfile(); // Refresh profile data
       return { error: null };
-    } catch (err: any) {
-      return { error: err.message };
+    } catch (err: unknown) {
+      return { error: err instanceof Error ? err.message : 'An error occurred' };
     }
   };
 

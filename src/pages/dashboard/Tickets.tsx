@@ -308,13 +308,13 @@ export default function Tickets() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={statusConfig[ticket.status as keyof typeof statusConfig].color as any}>
+                            <Badge variant={statusConfig[ticket.status as keyof typeof statusConfig].color as "default" | "secondary" | "destructive" | "outline"}>
                               <StatusIcon className="h-3 w-3 mr-1" />
                               {statusConfig[ticket.status as keyof typeof statusConfig].label}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={priorityConfig[ticket.priority as keyof typeof priorityConfig].color as any}>
+                            <Badge variant={priorityConfig[ticket.priority as keyof typeof priorityConfig].color as "default" | "secondary" | "destructive" | "outline"}>
                               {priorityConfig[ticket.priority as keyof typeof priorityConfig].label}
                             </Badge>
                           </TableCell>

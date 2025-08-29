@@ -145,7 +145,7 @@ const Status = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, any> = {
+    const variants: Record<string, { variant: string; className?: string }> = {
       operational: { variant: "outline", className: "text-green-600 border-green-200" },
       partial_outage: { variant: "outline", className: "text-yellow-600 border-yellow-200" },
       major_outage: { variant: "outline", className: "text-red-600 border-red-200" },
