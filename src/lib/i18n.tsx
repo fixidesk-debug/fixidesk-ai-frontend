@@ -283,7 +283,20 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocale,
     t: (key: string) => {
       const table = defaultMessages[locale] ?? {};
-      return table[key] ?? key;
+      const sanitizedKey = key.replace(/[<>"'&]/g, '');
+      const result = table[sanitizedKey] ?? sanitizedKey;
+      return typeof result === 'string' 
+        ? result.replace(/[<>"'&]/g, (match) => {
+            const escapeMap: Record<string, string> = { 
+              '<': '&lt;', 
+              '>': '&gt;', 
+              '"': '&quot;', 
+              "'": '&#x27;', 
+              '&': '&amp;' 
+            };
+            return escapeMap[match] || match;
+          })
+        : result;
     },
   }), [locale]);
 

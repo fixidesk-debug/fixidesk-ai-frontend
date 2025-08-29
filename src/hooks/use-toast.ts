@@ -6,7 +6,7 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 1000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -62,10 +62,10 @@ const addToRemoveQueue = (toastId: string) => {
 
   const timeout = setTimeout(() => {
     toastTimeouts.delete(toastId)
-    dispatch({
-      type: "REMOVE_TOAST",
-      toastId: toastId,
-    })
+      dispatch({
+        type: "REMOVE_TOAST",
+        toastId: typeof toastId === 'string' && toastId.length < 100 ? toastId : undefined,
+      })
   }, TOAST_REMOVE_DELAY)
 
   toastTimeouts.set(toastId, timeout)
@@ -131,6 +131,7 @@ const listeners: Array<(state: State) => void> = []
 let memoryState: State = { toasts: [] }
 
 function dispatch(action: Action) {
+  if (!action || typeof action.type !== 'string') return
   memoryState = reducer(memoryState, action)
   listeners.forEach((listener) => {
     listener(memoryState)
@@ -142,6 +143,13 @@ type Toast = Omit<ToasterToast, "id">
 function toast({ ...props }: Toast) {
   const id = genId()
 
+  // Sanitize toast content
+  const sanitizedProps = {
+    ...props,
+    title: typeof props.title === 'string' ? props.title.slice(0, 100) : props.title,
+    description: typeof props.description === 'string' ? props.description.slice(0, 500) : props.description,
+  }
+
   const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
@@ -152,7 +160,7 @@ function toast({ ...props }: Toast) {
   dispatch({
     type: "ADD_TOAST",
     toast: {
-      ...props,
+      ...sanitizedProps,
       id,
       open: true,
       onOpenChange: (open) => {

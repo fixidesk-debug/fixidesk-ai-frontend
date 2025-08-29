@@ -70,16 +70,23 @@ export default function Settings() {
   const handleProfileSave = async () => {
     setLoading(true);
     
-    const firstName = (document.getElementById('first-name') as HTMLInputElement)?.value;
-    const lastName = (document.getElementById('last-name') as HTMLInputElement)?.value;
-    const companyName = (document.getElementById('company-name') as HTMLInputElement)?.value;
-    const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
+    const firstName = (document.getElementById('first-name') as HTMLInputElement)?.value?.trim();
+    const lastName = (document.getElementById('last-name') as HTMLInputElement)?.value?.trim();
+    const companyName = (document.getElementById('company-name') as HTMLInputElement)?.value?.trim();
+    const phone = (document.getElementById('phone') as HTMLInputElement)?.value?.trim();
+
+    // Validate inputs
+    if (firstName && firstName.length > 50) {
+      toast({ title: "Error", description: "First name too long", variant: "destructive" });
+      setLoading(false);
+      return;
+    }
 
     const { error } = await updateProfile({
-      first_name: firstName,
-      last_name: lastName,
-      company_name: companyName,
-      phone: phone,
+      first_name: firstName || null,
+      last_name: lastName || null,
+      company_name: companyName || null,
+      phone: phone || null,
     });
 
     if (error) {
@@ -99,9 +106,13 @@ export default function Settings() {
   };
 
   const handleIntegrationToggle = (integrationId: string, enabled: boolean) => {
+    const sanitizedId = typeof integrationId === 'string' ? integrationId.replace(/[^a-zA-Z0-9_-]/g, '') : '';
+    const integration = integrations.find(i => i.id === sanitizedId);
+    if (!integration) return;
+    
     toast({
       title: enabled ? "Integration enabled" : "Integration disabled",
-      description: `${integrations.find(i => i.id === integrationId)?.name} has been ${enabled ? 'enabled' : 'disabled'}.`,
+      description: `${integration.name} has been ${enabled ? 'enabled' : 'disabled'}.`,
     });
   };
 
@@ -184,7 +195,7 @@ export default function Settings() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" defaultValue={user?.email} disabled />
+<Input id="email" type="email" defaultValue={user?.email || ''} disabled />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone</Label>

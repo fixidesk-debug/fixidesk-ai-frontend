@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Welcome back!",
         description: "You have successfully logged in.",
       });
+      window.location.href = '/dashboard';
     }
 
     return { error };

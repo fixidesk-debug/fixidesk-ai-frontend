@@ -12,4 +12,13 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  session: null,
+  loading: true,
+  signUp: async () => ({ error: null }),
+  signIn: async () => ({ error: null }),
+  signOut: async () => ({ error: null }),
+  resetPassword: async () => ({ error: null }),
+  isAuthenticated: false,
+});

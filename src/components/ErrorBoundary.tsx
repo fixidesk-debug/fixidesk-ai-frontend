@@ -13,7 +13,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
   componentDidCatch(error: unknown) {
     // Report to monitoring here if needed
-    console.error("App error:", error);
+    const sanitizedError = error instanceof Error ? error.message.replace(/[\r\n]/g, ' ') : 'Unknown error';
+    console.error("App error:", sanitizedError);
   }
   render() {
     if (this.state.hasError) {

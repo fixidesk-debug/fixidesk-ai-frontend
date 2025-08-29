@@ -29,7 +29,7 @@ export function useProfile() {
     }
 
     fetchProfile();
-  }, [user, fetchProfile]);
+  }, [user?.id]);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -52,10 +52,16 @@ export function useProfile() {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: 'No user found' };
 
+    // Validate and sanitize updates
+    const allowedFields = ['first_name', 'last_name', 'avatar_url', 'company_name', 'phone'];
+    const sanitizedUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([key]) => allowedFields.includes(key))
+    );
+
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(sanitizedUpdates)
         .eq('id', user.id);
 
       if (error) throw error;

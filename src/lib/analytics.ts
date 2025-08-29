@@ -6,7 +6,8 @@ type AnalyticsEvent = {
 export function track(event: AnalyticsEvent) {
   try {
     // Placeholder: wire to your analytics provider here
-    console.debug("[analytics]", event.name, event.props ?? {});
+    const sanitizedName = event.name.replace(/[\r\n\t]/g, ' ').slice(0, 100);
+    console.debug("[analytics]", sanitizedName, event.props ?? {});
   } catch (_) {
     // no-op
   }
