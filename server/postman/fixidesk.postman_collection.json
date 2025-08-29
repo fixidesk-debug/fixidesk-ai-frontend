@@ -1,0 +1,10 @@
+{
+  "info": {
+    "name": "FixiDesk API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    { "name": "Login", "request": { "method": "POST", "url": "/v1/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"pass\"\n}" } } },
+    { "name": "Create Ticket", "request": { "method": "POST", "url": "/v1/tickets", "body": { "mode": "raw", "raw": "{\n  \"inbox_id\": \"...\",\n  \"subject\": \"Help\",\n  \"message\": { \"body_text\": \"Hi\" }\n}" } } }
+  ]
+}

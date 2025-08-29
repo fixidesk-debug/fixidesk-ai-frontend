@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: FixiDesk API
+  version: 1.0.0
+servers:
+  - url: https://api.fixidesk.example
+paths:
+  /v1/auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200': { description: OK }
+  /v1/tickets:
+    post:
+      summary: Create ticket
+      responses:
+        '201': { description: Created }
+    get:
+      summary: List tickets
+      responses:
+        '200': { description: OK }
+  /v1/tickets/{ticket_id}:
+    get:
+      summary: Get ticket
+      parameters:
+        - in: path
+          name: ticket_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /v1/ai/triage:
+    post:
+      summary: Triage message
+      responses:
+        '200': { description: OK }
