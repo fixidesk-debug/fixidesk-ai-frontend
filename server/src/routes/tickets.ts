@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { getSupabaseClient } from '../utils/db';
 import { validateBody } from '../middleware/validate';
@@ -30,7 +31,7 @@ router.post('/', validateBody(createSchema), async (req, res) => {
   }
 
   const { data: t, error } = await supabase.from('tickets').insert({
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     org_id: auth.org_id,
     inbox_id,
     customer_id,
@@ -41,9 +42,9 @@ router.post('/', validateBody(createSchema), async (req, res) => {
   if (error) return res.status(400).json({ error: 'create_failed' });
 
   if (message?.body_text || message?.body_html) {
-    await supabase.from('threads').insert({ id: crypto.randomUUID(), ticket_id: t.id, org_id: auth.org_id, type: 'external' });
+    await supabase.from('threads').insert({ id: randomUUID(), ticket_id: t.id, org_id: auth.org_id, type: 'external' });
     await supabase.from('messages').insert({
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       thread_id: null,
       ticket_id: t.id,
       org_id: auth.org_id,
@@ -52,7 +53,7 @@ router.post('/', validateBody(createSchema), async (req, res) => {
       body_html: sanitize(message.body_html || ''),
       sender_user_id: null,
       sender_customer_id: customer_id,
-      message_uuid: crypto.randomUUID(),
+      message_uuid: randomUUID(),
       provider: 'internal',
       provider_message_id: null,
     });
@@ -102,7 +103,7 @@ router.post('/:ticket_id/reply', validateBody(replySchema), async (req, res) => 
   const { data: t, error } = await supabase.from('tickets').select('id').eq('org_id', auth.org_id).eq('id', ticket_id).single();
   if (error) return res.status(404).json({ error: 'not_found' });
   const msg = {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     thread_id: null,
     ticket_id: t.id,
     org_id: auth.org_id,
@@ -111,7 +112,7 @@ router.post('/:ticket_id/reply', validateBody(replySchema), async (req, res) => 
     body_html: sanitize(body_html || ''),
     sender_user_id: (req as any).auth?.sub || null,
     sender_customer_id: null,
-    message_uuid: crypto.randomUUID(),
+    message_uuid: randomUUID(),
     provider: 'internal',
     provider_message_id: null,
   };
