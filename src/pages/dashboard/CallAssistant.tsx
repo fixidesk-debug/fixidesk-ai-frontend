@@ -395,7 +395,7 @@ export default function CallAssistant() {
                         <TableCell className="font-mono text-sm">{call.phone}</TableCell>
                         <TableCell>{call.duration}</TableCell>
                         <TableCell>
-                          <Badge variant={getStatusColor(call.status) as any}>
+                          <Badge variant={getStatusColor(call.status) as "default" | "secondary" | "destructive" | "outline"}>
                             {call.status.charAt(0).toUpperCase() + call.status.slice(1)}
                           </Badge>
                         </TableCell>

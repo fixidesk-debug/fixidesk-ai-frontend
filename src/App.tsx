@@ -1,10 +1,11 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider } from "@/contexts";
 import { AuthGuard } from "@/components/auth-guard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useEffect } from "react";
@@ -52,6 +53,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <SpeedInsights />
           <BrowserRouter>
             <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:bg-background focus:text-foreground focus:px-3 focus:py-2 focus:rounded-md z-50">Skip to content</a>
             <Suspense fallback={<div className="fixed inset-0 grid place-items-center"><LoadingSpinner size="lg" /></div>}>

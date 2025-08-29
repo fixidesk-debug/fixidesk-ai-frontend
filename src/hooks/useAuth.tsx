@@ -1,110 +1,11 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authApi } from '@/lib/api';
-import { useToast } from '@/hooks/use-toast';
+import { useContext } from 'react';
+import { AuthContext } from '@/contexts/auth.types';
+import type { AuthContextType } from '@/contexts/auth.types';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  company: string;
-  avatar?: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; email: string; password: string; company: string }) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      authApi.me()
-        .then(response => setUser(response.data))
-        .catch(() => localStorage.removeItem('auth_token'))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await authApi.login({ email, password });
-      const { token, user } = response.data;
-      localStorage.setItem('auth_token', token);
-      setUser(user);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.response?.data?.message || "Invalid credentials",
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const register = async (data: { name: string; email: string; password: string; company: string }) => {
-    try {
-      const response = await authApi.register(data);
-      const { token, user } = response.data;
-      localStorage.setItem('auth_token', token);
-      setUser(user);
-      toast({
-        title: "Account created!",
-        description: "Welcome to FixiDesk. Your account has been created successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Registration failed",
-        description: error.response?.data?.message || "Failed to create account",
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    setUser(null);
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
-  };
-
-  return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      login,
-      register,
-      logout,
-      isAuthenticated: !!user,
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export function useAuth() {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}
+};

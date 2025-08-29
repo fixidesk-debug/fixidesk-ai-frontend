@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Logo } from "@/components/ui/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -22,6 +23,8 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const {
@@ -33,17 +36,15 @@ export default function Login() {
   });
 
   const onSubmit = async (data: LoginForm) => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: "Welcome back!",
-      description: "You have been successfully logged in.",
-    });
-    
-    setIsLoading(false);
-    // Redirect to dashboard would happen here
+    try {
+      setIsLoading(true);
+      await login(data.email, data.password);
+      navigate('/dashboard');
+    } catch (error) {
+      // Error is already handled in the useAuth hook
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
