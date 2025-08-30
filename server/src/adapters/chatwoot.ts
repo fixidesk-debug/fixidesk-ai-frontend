@@ -14,6 +14,7 @@ async function webhook(req: Request, res: Response) {
     const ticket_id = randomUUID();
     await supabase.from('tickets').insert({ id: ticket_id, org_id, inbox_id, customer_id: null, subject: payload?.conversation?.display_id ? `Chatwoot #${payload.conversation.display_id}` : 'Chatwoot Conversation', status: 'open', priority: 'normal' });
     await supabase.from('outbox').insert({ org_id, event_type: 'ticket.created', payload: { ticket_id }, processed: false });
+    try { const { publish } = await import('../realtime'); publish(`org:${org_id}:inbox:${inbox_id}`, { event: 'ticket.created', data: { id: ticket_id } }); } catch {}
     return res.json({ ok: true, ticket_id });
   }
   if (event === 'message_created') {
