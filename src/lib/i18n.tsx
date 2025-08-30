@@ -194,7 +194,7 @@ const defaultMessages: Record<string, Messages> = {
     "features.learning.title": "लगातार सीखना",
     "features.learning.desc": "आपकी टीम के जवाबों और फ़ीडबैक से सीखकर एआई समय के साथ बेहतर होता जाता है।",
     "how.header": "FixiDesk कैसे काम करता है",
-    "how.sub": "हमारी सरल तीन-स्टेप प्रक्रिया के साथ मिनटों में शुरू करें। किसी तकनीकी विशेषज्ञता की आवश्यकता नहीं।",
+    "how.sub": "हमारी सरल ���ीन-स्टेप प्रक्रिया के साथ मिनटों में शुरू करें। किसी तकनीकी विशेषज्ञता की आवश्यकता नहीं।",
     "how.step1.title": "अपने चैनल कनेक्ट करें",
     "how.step1.desc": "कुछ क्लिक में ईमेल, चैट और सोशल मीडिया चैनल्स के साथ FixiDesk इंटीग्रेट करें।",
     "how.step1.f1": "ईमेल इंटीग्रेशन",
@@ -216,7 +216,7 @@ const defaultMessages: Record<string, Messages> = {
     "integrations.header": "आपके पसंदीदा टूल्स के साथ सहज इंटीग्रेशन",
     "integrations.sub": "CRM से लेकर सहयोग प्लेटफ़ॉर्म तक, FixiDesk वहीं कनेक्ट करता है जहाँ आप काम करते हैं।",
     "integrations.ctaSub": "हमारे प्लेटफ़ॉर्म के माध्यम से 1000+ ऐप्स से कनेक्ट करें",
-    "integrations.cta": "सभी इंटीग्रेशन देखें",
+    "integrations.cta": "सभ�� इंटीग्रेशन देखें",
     "pricing.header": "सरल, पारदर्शी मूल्य",
     "pricing.sub": "अपने व्यवसाय के लिए सही प्लान चुनें। सभी प्लान 14-दिन के फ़्री ट्रायल के साथ, बिना क्रेडिट कार्ड।",
     "pricing.mostPopular": "सबसे लोकप्रिय",
@@ -229,7 +229,7 @@ const defaultMessages: Record<string, Messages> = {
     "pricing.plan.starter.f1": "1,000 टिकट/माह तक",
     "pricing.plan.starter.f2": "बेसिक एआई जवाब",
     "pricing.plan.starter.f3": "ईमेल इंटीग्रेशन",
-    "pricing.plan.starter.f4": "स्टैंडर्ड सपोर्ट",
+    "pricing.plan.starter.f4": "स्टैंडर्ड सपोर��ट",
     "pricing.plan.starter.f5": "बेसिक एनालिटिक्स",
     "pricing.plan.starter.f6": "2 टीम मेंबर्स",
     "pricing.plan.pro.name": "प्रोफेशनल",
@@ -276,7 +276,19 @@ const defaultMessages: Record<string, Messages> = {
 };
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = useState<string>("en");
+  const getInitial = () => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('locale') : null;
+    if (stored && defaultMessages[stored]) return stored;
+    const nav = typeof navigator !== 'undefined' ? navigator.language : 'en';
+    if (nav?.toLowerCase().startsWith('hi')) return 'hi';
+    return 'en';
+  };
+  const [locale, _setLocale] = useState<string>(getInitial());
+
+  const setLocale = (next: string) => {
+    _setLocale(next);
+    try { localStorage.setItem('locale', next); } catch {}
+  };
 
   const value = useMemo<I18nContextValue>(() => ({
     locale,
@@ -285,14 +297,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       const table = defaultMessages[locale] ?? {};
       const sanitizedKey = key.replace(/[<>"'&]/g, '');
       const result = table[sanitizedKey] ?? sanitizedKey;
-      return typeof result === 'string' 
+      return typeof result === 'string'
         ? result.replace(/[<>"'&]/g, (match) => {
-            const escapeMap: Record<string, string> = { 
-              '<': '&lt;', 
-              '>': '&gt;', 
-              '"': '&quot;', 
-              "'": '&#x27;', 
-              '&': '&amp;' 
+            const escapeMap: Record<string, string> = {
+              '<': '&lt;',
+              '>': '&gt;',
+              '"': '&quot;',
+              "'": '&#x27;',
+              '&': '&amp;'
             };
             return escapeMap[match] || match;
           })
@@ -302,5 +314,3 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
-
-
