@@ -10,7 +10,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "server:dev": "tsx server/src/index.ts",
+    "worker:outbox": "tsx server/src/worker/outbox-worker.ts",
+    "worker:billing": "tsx server/src/worker/billing-cron.ts",
+    "migrate": "tsx server/src/scripts/run-migrations.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -66,7 +70,22 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.0.0",
+    "jose": "^5.9.3",
+    "marked": "^12.0.2",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.11.5",
+    "pino": "^9.4.0",
+    "prom-client": "^15.1.3",
+    "sanitize-html": "^2.13.1",
+    "uuid": "^9.0.1",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -88,9 +107,15 @@
     "lovable-tagger": "^1.1.9",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.1",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@types/express": "^4.17.21",
+    "@types/ws": "^8.5.10",
+    "@types/multer": "^1.4.12",
+    "@types/sanitize-html": "^2.9.5",
+    "@types/uuid": "^9.0.7"
   }
 }

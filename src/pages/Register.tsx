@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowLeft, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -31,6 +31,7 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -49,9 +50,9 @@ export default function Register() {
       title: "Account created!",
       description: "Welcome to FixiDesk. Your account has been successfully created.",
     });
-    
+
     setIsLoading(false);
-    // Redirect to dashboard would happen here
+    navigate('/login', { replace: true });
   };
 
   return (
