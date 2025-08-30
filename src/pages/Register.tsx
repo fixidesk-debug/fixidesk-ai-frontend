@@ -50,9 +50,9 @@ export default function Register() {
       title: "Account created!",
       description: "Welcome to FixiDesk. Your account has been successfully created.",
     });
-    
+
     setIsLoading(false);
-    // Redirect to dashboard would happen here
+    navigate('/login', { replace: true });
   };
 
   return (
