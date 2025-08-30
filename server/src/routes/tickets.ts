@@ -44,8 +44,9 @@ router.post('/', idempotency(), validateBody(createSchema), async (req, res) => 
 
   if (message?.body_text || message?.body_html) {
     await supabase.from('threads').insert({ id: randomUUID(), ticket_id: t.id, org_id: auth.org_id, type: 'external' });
+    const newMsgId = randomUUID();
     await supabase.from('messages').insert({
-      id: randomUUID(),
+      id: newMsgId,
       thread_id: null,
       ticket_id: t.id,
       org_id: auth.org_id,
@@ -58,7 +59,10 @@ router.post('/', idempotency(), validateBody(createSchema), async (req, res) => 
       provider: 'internal',
       provider_message_id: null,
     });
+    try { const { publish } = await import('../realtime'); publish(`org:${auth.org_id}:inbox:${inbox_id}`, { event: 'message.created', data: { id: newMsgId, ticket_id: t.id } }); } catch {}
   }
+
+  try { const { publish } = await import('../realtime'); publish(`org:${auth.org_id}:inbox:${inbox_id}`, { event: 'ticket.created', data: t }); } catch {}
 
   res.status(201).json(t);
 });
