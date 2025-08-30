@@ -25,6 +25,7 @@ async function webhook(req: Request, res: Response) {
     const ticket = await supabase.from('tickets').select('id').eq('org_id', org_id).order('created_at', { ascending: false }).limit(1).single();
     const message_id = randomUUID();
     await supabase.from('messages').insert({ id: message_id, thread_id: null, ticket_id: ticket.data.id, org_id, direction: 'inbound', body_text: payload?.message?.content || '', body_html: payload?.message?.content || '', sender_user_id: null, sender_customer_id: null, message_uuid: String(payload?.message?.id), provider: 'chatwoot', provider_message_id });
+    try { const { publish } = await import('../realtime'); publish(`org:${org_id}:inbox:${payload?.conversation?.inbox_id || 'unknown'}`, { event: 'message.created', data: { id: message_id, ticket_id: ticket.data.id } }); } catch {}
     return res.json({ ok: true, message_id });
   }
   return res.status(400).json({ error: 'unsupported_event' });
