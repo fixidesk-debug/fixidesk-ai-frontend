@@ -19,6 +19,25 @@ paths:
                 password: { type: string }
       responses:
         '200': { description: OK }
+  /v1/auth/refresh:
+    post:
+      summary: Refresh token
+      responses:
+        '200': { description: OK }
+  /v1/orgs/{org_id}/branding:
+    get:
+      summary: Get branding
+      parameters:
+        - in: path
+          name: org_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Update branding
+      responses:
+        '200': { description: OK }
   /v1/tickets:
     post:
       summary: Create ticket
@@ -38,8 +57,63 @@ paths:
           schema: { type: string }
       responses:
         '200': { description: OK }
+  /v1/tickets/{ticket_id}/reply:
+    post:
+      summary: Reply to ticket
+      responses:
+        '201': { description: Created }
+  /v1/messages/webhook/chatwoot:
+    post:
+      summary: Chatwoot webhook
+      responses:
+        '200': { description: OK }
+  /v1/messages/webhook/tiledesk:
+    post:
+      summary: Tiledesk webhook
+      responses:
+        '200': { description: OK }
+  /v1/messages/webhook/twilio:
+    post:
+      summary: Twilio webhook
+      responses:
+        '200': { description: OK }
+  /v1/messages/webhook/twilio/call:
+    post:
+      summary: Twilio call TwiML
+      responses:
+        '200': { description: OK }
+  /v1/tiledesk/response:
+    post:
+      summary: Generate Tiledesk bot response
+      responses:
+        '200': { description: OK }
   /v1/ai/triage:
     post:
       summary: Triage message
       responses:
         '200': { description: OK }
+  /v1/ai/execute:
+    post:
+      summary: Execute recommended action
+      responses:
+        '200': { description: OK }
+  /v1/kb/upload:
+    post:
+      summary: Upload KB document
+      responses:
+        '200': { description: OK }
+  /v1/outbox/publish:
+    post:
+      summary: Publish outbox event
+      responses:
+        '200': { description: OK }
+  /v1/admin/provision:
+    post:
+      summary: Provision tenant
+      responses:
+        '200': { description: OK }
+  /v1/realtime:
+    get:
+      summary: WebSocket endpoint
+      responses:
+        '101': { description: Switching Protocols }

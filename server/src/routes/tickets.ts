@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { getSupabaseClient } from '../utils/db';
 import { validateBody } from '../middleware/validate';
+import { idempotency } from '../middleware/idempotency';
 import { sanitize } from '../utils/sanitize';
 
 const router = Router();
@@ -15,7 +16,7 @@ const createSchema = z.object({
   priority: z.string().optional(),
 });
 
-router.post('/', validateBody(createSchema), async (req, res) => {
+router.post('/', idempotency(), validateBody(createSchema), async (req, res) => {
   const auth = (req as any).auth;
   const { inbox_id, customer, subject, message, priority } = (req as any).validated as z.infer<typeof createSchema>;
   const supabase = getSupabaseClient((req as any).accessToken);
@@ -95,7 +96,7 @@ const replySchema = z.object({
   body_html: z.string().optional(),
 });
 
-router.post('/:ticket_id/reply', validateBody(replySchema), async (req, res) => {
+router.post('/:ticket_id/reply', idempotency(), validateBody(replySchema), async (req, res) => {
   const auth = (req as any).auth;
   const { ticket_id } = req.params;
   const { type, body_text, body_html } = (req as any).validated as z.infer<typeof replySchema>;
