@@ -30,7 +30,8 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   for (let i = 0; i < text.length; i += chunkSize) passages.push(text.slice(i, i + chunkSize));
   const supabase = getSupabaseClient((req as any).accessToken);
   for (const [idx, content] of passages.entries()) {
-    await supabase.from('vector_documents').insert({ id: randomUUID(), org_id: auth.org_id, source: 'kb_upload', source_id: String(idx), embedding: null, content, metadata: {} });
+    const embedding = embedText(content);
+    await supabase.from('vector_documents').insert({ id: randomUUID(), org_id: auth.org_id, source: 'kb_upload', source_id: String(idx), embedding, content, metadata: {} });
   }
   res.json({ ok: true, chunks: passages.length });
 });
