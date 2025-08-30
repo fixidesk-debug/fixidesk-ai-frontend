@@ -4,6 +4,65 @@ info:
   version: 1.0.0
 servers:
   - url: https://api.fixidesk.example
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Branding:
+      type: object
+      properties:
+        logo_url: { type: string, format: uri }
+        primary_color: { type: string }
+        css: { type: string }
+        custom_domain: { type: array, items: { type: string } }
+        mail_from: { type: string }
+        twilio_subaccount_sid: { type: string }
+    Ticket:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        org_id: { type: string, format: uuid }
+        inbox_id: { type: string, format: uuid }
+        customer_id: { type: string, format: uuid }
+        subject: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        created_at: { type: string, format: date-time }
+    Message:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ticket_id: { type: string, format: uuid }
+        direction: { type: string, enum: [inbound, outbound, note] }
+        body_text: { type: string }
+        body_html: { type: string }
+        created_at: { type: string, format: date-time }
+    TriageRequest:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+        ticket_id: { type: string, format: uuid }
+    TriageResponse:
+      type: object
+      properties:
+        intent: { type: string }
+        confidence: { type: number }
+        action: { type: object }
+        suggested_reply: { type: string }
+        sources:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              url: { type: string }
+              snippet: { type: string }
+security:
+  - bearerAuth: []
 paths:
   /v1/auth/login:
     post:
@@ -14,14 +73,36 @@ paths:
           application/json:
             schema:
               type: object
+              required: [email, password]
               properties:
-                email: { type: string }
-                password: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+            example:
+              email: admin@example.com
+              password: password123
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token: { type: string }
+                  refresh_token: { type: string }
   /v1/auth/refresh:
     post:
       summary: Refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+            example:
+              refresh_token: <token>
       responses:
         '200': { description: OK }
   /v1/orgs/{org_id}/branding:
@@ -33,20 +114,82 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  org_id: { type: string }
+                  branding: { $ref: '#/components/schemas/Branding' }
     post:
       summary: Update branding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Branding' }
       responses:
         '200': { description: OK }
   /v1/tickets:
     post:
       summary: Create ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [inbox_id, subject]
+              properties:
+                inbox_id: { type: string }
+                subject: { type: string }
+                priority: { type: string }
+                message:
+                  type: object
+                  properties:
+                    body_text: { type: string }
+                    body_html: { type: string }
+            example:
+              inbox_id: 11111111-1111-1111-1111-111111111111
+              subject: Need help
+              message:
+                body_text: Hello
       responses:
-        '201': { description: Created }
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Ticket' }
     get:
       summary: List tickets
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: inbox_id
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: page_size
+          schema: { type: integer }
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Ticket' }
+                  page: { type: integer }
+                  page_size: { type: integer }
   /v1/tickets/{ticket_id}:
     get:
       summary: Get ticket
@@ -56,10 +199,30 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket: { $ref: '#/components/schemas/Ticket' }
+                  messages:
+                    type: array
+                    items: { $ref: '#/components/schemas/Message' }
   /v1/tickets/{ticket_id}/reply:
     post:
       summary: Reply to ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string }
+                body_text: { type: string }
+                body_html: { type: string }
       responses:
         '201': { description: Created }
   /v1/messages/webhook/chatwoot:
@@ -81,39 +244,106 @@ paths:
     post:
       summary: Twilio call TwiML
       responses:
-        '200': { description: OK }
+        '200':
+          description: TwiML
+          content:
+            text/xml: { schema: { type: string } }
   /v1/tiledesk/response:
     post:
       summary: Generate Tiledesk bot response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query: { type: string }
       responses:
         '200': { description: OK }
   /v1/ai/triage:
     post:
       summary: Triage message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TriageRequest' }
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TriageResponse' }
   /v1/ai/execute:
     post:
       summary: Execute recommended action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: object
+                  properties:
+                    name: { type: string }
+                    params: { type: object }
+                ticket_id: { type: string }
+                amount: { type: number }
       responses:
         '200': { description: OK }
   /v1/kb/upload:
     post:
       summary: Upload KB document
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
       responses:
         '200': { description: OK }
   /v1/outbox/publish:
     post:
       summary: Publish outbox event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_type: { type: string }
+                payload: { type: object }
       responses:
         '200': { description: OK }
   /v1/admin/provision:
     post:
       summary: Provision tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, plan, admin_email, subdomain]
+              properties:
+                name: { type: string }
+                plan: { type: string }
+                admin_email: { type: string }
+                subdomain: { type: string }
+                use_managed_channels: { type: boolean }
       responses:
         '200': { description: OK }
   /v1/realtime:
     get:
       summary: WebSocket endpoint
+      description: Connect with ws and send {"type":"subscribe","channel":"org:{org_id}:inbox:{inbox_id}"}
       responses:
         '101': { description: Switching Protocols }

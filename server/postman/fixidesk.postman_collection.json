@@ -4,7 +4,11 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
-    { "name": "Login", "request": { "method": "POST", "url": "/v1/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"pass\"\n}" } } },
-    { "name": "Create Ticket", "request": { "method": "POST", "url": "/v1/tickets", "body": { "mode": "raw", "raw": "{\n  \"inbox_id\": \"...\",\n  \"subject\": \"Help\",\n  \"message\": { \"body_text\": \"Hi\" }\n}" } } }
-  ]
+    { "name": "Auth/Login", "request": { "method": "POST", "header": [ {"key":"Content-Type","value":"application/json"} ], "url": "/v1/auth/login", "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}" } } },
+    { "name": "Tickets/Create", "request": { "method": "POST", "header": [ {"key":"Content-Type","value":"application/json"}, {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "/v1/tickets", "body": { "mode": "raw", "raw": "{\n  \"inbox_id\": \"11111111-1111-1111-1111-111111111111\",\n  \"subject\": \"Need help\",\n  \"message\": { \"body_text\": \"Hello\" }\n}" } } },
+    { "name": "Tickets/List", "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": {"raw":"/v1/tickets?status=open","path":["v1","tickets"],"query":[{"key":"status","value":"open"}] } } },
+    { "name": "AI/Triage", "request": { "method": "POST", "header": [ {"key":"Content-Type","value":"application/json"}, {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "/v1/ai/triage", "body": { "mode": "raw", "raw": "{\n  \"message\": \"Where is my order?\"\n}" } } },
+    { "name": "KB/Upload", "request": { "method": "POST", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "/v1/kb/upload" } }
+  ],
+  "variable": [ { "key": "token", "value": "" } ]
 }
