@@ -1,4 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('../src/utils/db', () => ({
+  getSupabaseClient: () => ({
+    rpc: async () => ({ data: [] }),
+    from: () => ({ insert: async () => ({}) })
+  })
+}));
+
 import { triage } from '../src/orchestrator';
 
 describe('orchestrator triage', () => {
