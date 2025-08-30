@@ -12,6 +12,7 @@ import aiRoutes from './routes/ai';
 import kbRoutes from './routes/kb';
 import outboxRoutes from './routes/outbox';
 import adminRoutes from './routes/admin';
+import n8nRoutes from './routes/n8n';
 
 const app = express();
 app.use(helmet());
@@ -31,5 +32,6 @@ app.use('/v1/ai', aiRoutes);
 app.use('/v1/kb', kbRoutes);
 app.use('/v1/outbox', outboxRoutes);
 app.use('/v1/admin', adminRoutes);
+app.use('/v1/n8n', n8nRoutes);
 
 export default app;

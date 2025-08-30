@@ -4,6 +4,7 @@ import pdf from 'pdf-parse';
 import { marked } from 'marked';
 import { randomUUID } from 'crypto';
 import { getSupabaseClient } from '../utils/db';
+import { embedText } from '../utils/embed';
 
 const upload = multer();
 const router = Router();
