@@ -123,6 +123,7 @@ router.post('/:ticket_id/reply', idempotency(), validateBody(replySchema), async
   };
   await supabase.from('messages').insert(msg);
   await supabase.from('outbox').insert({ org_id: auth.org_id, event_type: 'message.created', payload: { ticket_id, message_id: msg.id }, processed: false });
+  try { const { publish } = await import('../realtime'); publish(`org:${auth.org_id}:inbox:${(req.query?.inbox_id as string) || 'default'}`, { event: 'message.created', data: { id: msg.id, ticket_id } }); } catch {}
   res.status(201).json({ ok: true, message_id: msg.id });
 });
 
