@@ -12,6 +12,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Users,
+  Mail,
+  Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
@@ -25,9 +28,24 @@ const navigationItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Tickets",
+    title: "Support",
     href: "/dashboard/tickets",
     icon: Inbox,
+  },
+  {
+    title: "CRM",
+    href: "/dashboard/crm",
+    icon: Users,
+  },
+  {
+    title: "Campaigns",
+    href: "/dashboard/campaigns",
+    icon: Mail,
+  },
+  {
+    title: "Automations",
+    href: "/dashboard/automations",
+    icon: Workflow,
   },
   {
     title: "AI Assistant",

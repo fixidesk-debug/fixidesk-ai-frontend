@@ -1,0 +1,191 @@
+{
+  "name": "Missed Call Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "telnyx-call-event",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "telnyx-webhook",
+      "name": "Telnyx Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "telnyx-call-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.data.event_type }}",
+              "operation": "equal",
+              "value2": "call.hangup"
+            },
+            {
+              "value1": "={{ $json.data.call_duration_secs }}",
+              "operation": "smaller",
+              "value2": "5"
+            },
+            {
+              "value1": "={{ $json.data.direction }}",
+              "operation": "equal",
+              "value2": "inbound"
+            }
+          ]
+        }
+      },
+      "id": "filter-missed-calls",
+      "name": "Filter Missed Calls",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "missed_calls",
+        "columns": {
+          "call_id": "={{ $json.data.call_control_id }}",
+          "from_number": "={{ $json.data.from }}",
+          "to_number": "={{ $json.data.to }}",
+          "duration": "={{ $json.data.call_duration_secs }}",
+          "timestamp": "={{ $json.data.occurred_at }}",
+          "status": "missed"
+        }
+      },
+      "id": "log-missed-call",
+      "name": "Log to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-credentials",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "task",
+        "additionalFields": {
+          "name": "Follow up on missed call from {{ $('Telnyx Webhook').first().json.data.from }}",
+          "description": "Missed call received at {{ $('Telnyx Webhook').first().json.data.occurred_at }}. Duration: {{ $('Telnyx Webhook').first().json.data.call_duration_secs }} seconds. Please follow up with the caller.",
+          "status": "Not Started",
+          "priority": "High",
+          "dateStart": "={{ new Date().toISOString().split('T')[0] }}",
+          "assignedUserId": "admin"
+        }
+      },
+      "id": "create-followup-task",
+      "name": "Create Follow-up Task",
+      "type": "n8n-nodes-base.espoCrm",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "credentials": {
+        "espoCrmApi": {
+          "id": "espocrm-credentials",
+          "name": "EspoCRM API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@fixidesk.com",
+        "toEmail": "support@fixidesk.com",
+        "subject": "🔔 Missed Call Alert - {{ $('Telnyx Webhook').first().json.data.from }}",
+        "text": "A missed call was received:\n\nFrom: {{ $('Telnyx Webhook').first().json.data.from }}\nTo: {{ $('Telnyx Webhook').first().json.data.to }}\nTime: {{ $('Telnyx Webhook').first().json.data.occurred_at }}\nDuration: {{ $('Telnyx Webhook').first().json.data.call_duration_secs }} seconds\n\nA follow-up task has been created in the CRM.\n\nTask ID: {{ $('Create Follow-up Task').first().json.id }}",
+        "html": "<h2>🔔 Missed Call Alert</h2><p><strong>From:</strong> {{ $('Telnyx Webhook').first().json.data.from }}</p><p><strong>To:</strong> {{ $('Telnyx Webhook').first().json.data.to }}</p><p><strong>Time:</strong> {{ $('Telnyx Webhook').first().json.data.occurred_at }}</p><p><strong>Duration:</strong> {{ $('Telnyx Webhook').first().json.data.call_duration_secs }} seconds</p><p>A follow-up task has been created in the CRM.</p><p><strong>Task ID:</strong> {{ $('Create Follow-up Task').first().json.id }}</p>"
+      },
+      "id": "send-email-alert",
+      "name": "Send Email Alert",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Missed call processed\", \"taskId\": $('Create Follow-up Task').first().json.id } }}"
+      },
+      "id": "response-node",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Telnyx Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter Missed Calls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Missed Calls": {
+      "main": [
+        [
+          {
+            "node": "Log to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Create Follow-up Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Follow-up Task": {
+      "main": [
+        [
+          {
+            "node": "Send Email Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Alert": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "createdAt": "2024-01-15T10:00:00.000Z",
+  "updatedAt": "2024-01-15T10:00:00.000Z",
+  "id": "missed-call-alert-workflow"
+}
+
