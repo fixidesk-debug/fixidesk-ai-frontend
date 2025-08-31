@@ -1,73 +1,317 @@
-# Welcome to your Lovable project
+# FixiDesk MVP - Customer Support & Sales Automation Suite
 
-## Project info
+FixiDesk is a comprehensive customer support and sales automation platform that integrates multiple open-source tools with a unified frontend dashboard and Supabase backend.
 
-**URL**: https://lovable.dev/projects/93b95780-1fe7-4764-a5d9-e17352f8e482
+## 🚀 Features
 
-## How can I edit this code?
+### Unified Frontend Dashboard
+- **Modern React/Next.js Interface**: Clean, responsive dashboard with dark/light theme support
+- **Sidebar Navigation**: Easy access to Support, CRM, Campaigns, Automations, and more
+- **Real-time Data**: Live updates from all integrated services
+- **Mobile Responsive**: Works seamlessly on desktop and mobile devices
 
-There are several ways of editing your application.
+### Core Modules
 
-**Use Lovable**
+#### 📞 Support & Ticketing
+- Integrated support inbox with Chatwoot
+- Ticket management and tracking
+- Customer interaction history
+- AI-powered call assistant with Telnyx integration
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/93b95780-1fe7-4764-a5d9-e17352f8e482) and start prompting.
+#### 🏢 CRM (Customer Relationship Management)
+- Lead and contact management via EspoCRM
+- Deal pipeline tracking
+- Customer data synchronization
+- Sales performance analytics
 
-Changes made via Lovable will be committed automatically to this repo.
+#### 📧 Marketing Campaigns
+- Email marketing automation with Mautic
+- Campaign performance tracking
+- Segmentation and targeting
+- Lead nurturing workflows
 
-**Use your preferred IDE**
+#### ⚡ Automations
+- Workflow automation with n8n
+- Cross-platform data synchronization
+- Event-driven triggers
+- Custom automation scenarios
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+#### 📱 Communication
+- Voice calling with Telnyx integration
+- Chat widget for website integration
+- Call logging and recording
+- SMS capabilities (optional)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🏗️ Architecture
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend       │    │   Database      │
+│   (Next.js)     │◄──►│   (Docker)      │◄──►│   (Supabase)    │
+│   - Dashboard   │    │   - Chatwoot    │    │   - Auth        │
+│   - CRM Views   │    │   - EspoCRM     │    │   - Data        │
+│   - Campaigns   │    │   - Mautic      │    │                 │
+│   - Automations │    │   - n8n         │    │                 │
+│   - Calling     │    │   - Redis       │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-**Edit a file directly in GitHub**
+## 🛠️ Technology Stack
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Frontend
+- **Next.js 14**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first CSS framework
+- **Shadcn/ui**: Modern UI component library
+- **Framer Motion**: Smooth animations
+- **React Query**: Data fetching and caching
 
-**Use GitHub Codespaces**
+### Backend Services
+- **Chatwoot**: Open-source customer support platform
+- **EspoCRM**: Customer relationship management
+- **Mautic**: Marketing automation platform
+- **n8n**: Workflow automation tool
+- **Redis**: Caching and session storage
+- **Nginx**: Reverse proxy and load balancer
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Database & Auth
+- **Supabase**: PostgreSQL database with real-time features
+- **Row Level Security**: Secure data access
+- **JWT Authentication**: Secure user sessions
 
-## What technologies are used for this project?
+### Infrastructure
+- **Docker Compose**: Container orchestration
+- **SSL/TLS**: Secure HTTPS connections
+- **DigitalOcean**: Cloud hosting platform
 
-This project is built with:
+## 📦 Quick Start
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Prerequisites
+- Node.js 18+ and npm
+- Docker and Docker Compose
+- Supabase account
+- Domain name (for production)
 
-## How can I deploy this project?
+### Development Setup
 
-Simply open [Lovable](https://lovable.dev/projects/93b95780-1fe7-4764-a5d9-e17352f8e482) and click on Share -> Publish.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/fixidesk-debug/fixidesk-ai-frontend.git
+   cd fixidesk-ai-frontend
+   ```
 
-## Can I connect a custom domain to my Lovable project?
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-Yes, you can!
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+4. **Start backend services**
+   ```bash
+   docker-compose up -d
+   ```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+5. **Start frontend development server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Access the application**
+   - Frontend: http://localhost:3000
+   - Chatwoot: http://localhost:8080
+   - EspoCRM: http://localhost:8081
+   - Mautic: http://localhost:8082
+   - n8n: http://localhost:5678
+
+### Production Deployment
+
+For production deployment, see the comprehensive [DEPLOYMENT.md](./DEPLOYMENT.md) guide.
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Key environment variables to configure:
+
+```env
+# Supabase
+SUPABASE_URL=your-supabase-project-url
+SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# Database
+POSTGRES_DB=fixidesk
+POSTGRES_USER=fixidesk_user
+POSTGRES_PASSWORD=secure_password
+
+# Services
+ESPOCRM_ADMIN_USERNAME=admin
+MAUTIC_ADMIN_EMAIL=admin@yourdomain.com
+CHATWOOT_SECRET_KEY_BASE=random_secret_key
+
+# Optional: Telnyx for calling
+TELNYX_API_KEY=your-telnyx-api-key
+TELNYX_PHONE_NUMBER=your-phone-number
+```
+
+### Service Configuration
+
+Each service requires initial setup:
+
+1. **EspoCRM**: Configure API access and create admin user
+2. **Mautic**: Set up email configuration and API credentials
+3. **Chatwoot**: Create inbox and configure webhooks
+4. **n8n**: Import workflows and configure service credentials
+
+## 🔄 Automation Workflows
+
+FixiDesk includes pre-built automation workflows:
+
+### 1. New Lead to CRM
+- **Trigger**: Website form submission
+- **Actions**: Create lead in EspoCRM → Store in Supabase → Add to Mautic
+
+### 2. Chat to Ticket
+- **Trigger**: Support message in Chatwoot
+- **Actions**: Create ticket in EspoCRM → Log in Supabase → Send confirmation
+
+### 3. Missed Call Alert
+- **Trigger**: Missed call via Telnyx
+- **Actions**: Log call → Create follow-up task → Send email alert
+
+### 4. Lead Nurturing
+- **Trigger**: Qualified lead in CRM
+- **Actions**: Add to Mautic segment → Start nurture campaign → Update records
+
+## 📊 Dashboard Features
+
+### Overview Dashboard
+- Key performance metrics
+- Recent activity feed
+- Quick action buttons
+- Team status indicators
+
+### Support Module
+- Ticket management interface
+- Customer interaction history
+- Response time analytics
+- Agent performance metrics
+
+### CRM Module
+- Lead and contact management
+- Deal pipeline visualization
+- Sales performance tracking
+- Customer communication history
+
+### Campaigns Module
+- Email campaign management
+- Performance analytics
+- Segmentation tools
+- A/B testing capabilities
+
+### Automations Module
+- Workflow management interface
+- Execution monitoring
+- Performance metrics
+- Error handling and logs
+
+### Calling Module
+- Telnyx integration for voice calls
+- Call history and recordings
+- Customer interaction tracking
+- Performance analytics
+
+## 🔐 Security Features
+
+- **Authentication**: Supabase Auth with JWT tokens
+- **Authorization**: Row Level Security (RLS) policies
+- **Data Encryption**: SSL/TLS for all communications
+- **API Security**: Rate limiting and input validation
+- **Access Control**: Role-based permissions
+
+## 📈 Analytics & Reporting
+
+- **Real-time Dashboards**: Live performance metrics
+- **Custom Reports**: Configurable reporting tools
+- **Data Export**: CSV/Excel export capabilities
+- **API Access**: RESTful APIs for custom integrations
+
+## 🔌 Integrations
+
+### Current Integrations
+- **Chatwoot**: Customer support and live chat
+- **EspoCRM**: Customer relationship management
+- **Mautic**: Email marketing and automation
+- **n8n**: Workflow automation
+- **Telnyx**: Voice calling and SMS
+- **Supabase**: Database and authentication
+
+### Extensibility
+The platform is designed for easy integration with additional services:
+- RESTful API architecture
+- Webhook support
+- Custom automation workflows
+- Plugin system for extensions
+
+## 🧪 Testing
+
+### Frontend Testing
+```bash
+npm run test          # Run unit tests
+npm run test:e2e      # Run end-to-end tests
+npm run lint          # Code linting
+npm run type-check    # TypeScript checking
+```
+
+### Integration Testing
+- API endpoint testing
+- Webhook functionality
+- Database operations
+- Authentication flows
+
+## 📚 Documentation
+
+- [Deployment Guide](./DEPLOYMENT.md) - Complete production deployment instructions
+- [Workflow Guide](./n8n-workflows/README.md) - Automation workflow documentation
+
+## 🆘 Support
+
+### Getting Help
+- **Documentation**: Check the docs folder for detailed guides
+- **Issues**: Report bugs and feature requests on GitHub
+- **Community**: Join our Discord server for community support
+- **Enterprise**: Contact us for enterprise support options
+
+### Common Issues
+- **Service startup problems**: Check Docker logs and system resources
+- **Authentication issues**: Verify Supabase configuration
+- **Webhook failures**: Ensure n8n is accessible and credentials are correct
+- **Performance issues**: Monitor resource usage and optimize as needed
+
+## 🗺️ Roadmap
+
+### Upcoming Features
+- [ ] Advanced analytics and reporting
+- [ ] Mobile application
+- [ ] Additional CRM integrations
+- [ ] AI-powered insights
+- [ ] Multi-tenant support
+- [ ] Advanced workflow builder
+- [ ] Video calling integration
+- [ ] Social media integrations
+
+### Version History
+- **v1.0.0**: Initial MVP release with core features
+- **v0.9.0**: Beta release with automation workflows
+- **v0.8.0**: Alpha release with basic dashboard
+
+---
+
+**Ready to transform your customer support and sales processes?** 
+
+Get started with FixiDesk today and experience the power of unified customer engagement!
+

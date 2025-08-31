@@ -1,0 +1,252 @@
+{
+  "name": "Lead Nurturing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm-lead-update",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "crm-webhook",
+      "name": "CRM Update Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "crm-update-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "operation": "equal",
+              "value2": "Qualified"
+            }
+          ],
+          "number": [
+            {
+              "value1": "={{ $json.opportunityAmount }}",
+              "operation": "largerEqual",
+              "value2": 10000
+            }
+          ]
+        }
+      },
+      "id": "filter-qualified-leads",
+      "name": "Filter Qualified Leads",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "createContact",
+        "email": "={{ $json.emailAddress }}",
+        "additionalFields": {
+          "firstName": "={{ $json.firstName }}",
+          "lastName": "={{ $json.lastName }}",
+          "company": "={{ $json.accountName }}",
+          "phone": "={{ $json.phoneNumber }}",
+          "tags": ["qualified-lead", "high-value"]
+        }
+      },
+      "id": "create-mautic-contact",
+      "name": "Create Mautic Contact",
+      "type": "n8n-nodes-base.mautic",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "mauticApi": {
+          "id": "mautic-credentials",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addContactToSegment",
+        "contactId": "={{ $json.id }}",
+        "segmentId": "high-value-prospects"
+      },
+      "id": "add-to-segment",
+      "name": "Add to High-Value Segment",
+      "type": "n8n-nodes-base.mautic",
+      "typeVersion": 1,
+      "position": [900, 200],
+      "credentials": {
+        "mauticApi": {
+          "id": "mautic-credentials",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addContactToCampaign",
+        "contactId": "={{ $('Create Mautic Contact').first().json.id }}",
+        "campaignId": "nurture-sequence-campaign"
+      },
+      "id": "start-nurture-campaign",
+      "name": "Start Nurture Campaign",
+      "type": "n8n-nodes-base.mautic",
+      "typeVersion": 1,
+      "position": [900, 400],
+      "credentials": {
+        "mauticApi": {
+          "id": "mautic-credentials",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": "leads",
+        "updateKey": "espocrm_id",
+        "keyValue": "={{ $('CRM Update Webhook').first().json.id }}",
+        "columns": {
+          "mautic_contact_id": "={{ $('Create Mautic Contact').first().json.id }}",
+          "nurture_campaign_started": true,
+          "nurture_start_date": "={{ new Date().toISOString() }}",
+          "lead_score": "={{ $('CRM Update Webhook').first().json.opportunityAmount / 1000 }}"
+        }
+      },
+      "id": "update-supabase",
+      "name": "Update Supabase Record",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-credentials",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "resource": "lead",
+        "leadId": "={{ $('CRM Update Webhook').first().json.id }}",
+        "updateFields": {
+          "description": "Lead added to nurture campaign. Mautic Contact ID: {{ $('Create Mautic Contact').first().json.id }}",
+          "source": "Automated Nurturing"
+        }
+      },
+      "id": "update-crm-record",
+      "name": "Update CRM Record",
+      "type": "n8n-nodes-base.espoCrm",
+      "typeVersion": 1,
+      "position": [1340, 300],
+      "credentials": {
+        "espoCrmApi": {
+          "id": "espocrm-credentials",
+          "name": "EspoCRM API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Lead nurturing started\", \"mauticContactId\": $('Create Mautic Contact').first().json.id, \"campaignStarted\": true } }}"
+      },
+      "id": "response-node",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1560, 300]
+    }
+  ],
+  "connections": {
+    "CRM Update Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter Qualified Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Qualified Leads": {
+      "main": [
+        [
+          {
+            "node": "Create Mautic Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Mautic Contact": {
+      "main": [
+        [
+          {
+            "node": "Add to High-Value Segment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Start Nurture Campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to High-Value Segment": {
+      "main": [
+        [
+          {
+            "node": "Update Supabase Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Nurture Campaign": {
+      "main": [
+        [
+          {
+            "node": "Update Supabase Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Supabase Record": {
+      "main": [
+        [
+          {
+            "node": "Update CRM Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update CRM Record": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "createdAt": "2024-01-15T10:00:00.000Z",
+  "updatedAt": "2024-01-15T10:00:00.000Z",
+  "id": "lead-nurturing-workflow"
+}
+

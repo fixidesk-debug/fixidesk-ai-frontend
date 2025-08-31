@@ -26,6 +26,9 @@ const Status = lazy(() => import("./pages/Status"));
 const Dashboard = lazy(() => import("./pages/dashboard/Dashboard"));
 const Tickets = lazy(() => import("./pages/dashboard/Tickets"));
 const TicketDetail = lazy(() => import("./pages/dashboard/TicketDetail"));
+const CRM = lazy(() => import("./pages/dashboard/CRM"));
+const Campaigns = lazy(() => import("./pages/dashboard/Campaigns"));
+const Automations = lazy(() => import("./pages/dashboard/Automations"));
 const CallAssistant = lazy(() => import("./pages/dashboard/CallAssistant"));
 const ChatWidget = lazy(() => import("./pages/dashboard/ChatWidget"));
 const Analytics = lazy(() => import("./pages/dashboard/Analytics"));
@@ -78,6 +81,9 @@ const App = () => (
               <Route path="/dashboard" element={<AuthGuard><Dashboard /></AuthGuard>} />
               <Route path="/dashboard/tickets" element={<AuthGuard><Tickets /></AuthGuard>} />
               <Route path="/dashboard/tickets/:id" element={<AuthGuard><TicketDetail /></AuthGuard>} />
+              <Route path="/dashboard/crm" element={<AuthGuard><CRM /></AuthGuard>} />
+              <Route path="/dashboard/campaigns" element={<AuthGuard><Campaigns /></AuthGuard>} />
+              <Route path="/dashboard/automations" element={<AuthGuard><Automations /></AuthGuard>} />
               <Route path="/dashboard/calls" element={<AuthGuard><CallAssistant /></AuthGuard>} />
               <Route path="/dashboard/chat" element={<AuthGuard><ChatWidget /></AuthGuard>} />
               <Route path="/dashboard/analytics" element={<AuthGuard><Analytics /></AuthGuard>} />

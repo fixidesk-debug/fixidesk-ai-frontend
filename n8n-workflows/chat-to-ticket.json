@@ -1,0 +1,189 @@
+{
+  "name": "Chat to Ticket",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot-message",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "chatwoot-webhook",
+      "name": "Chatwoot Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "chatwoot-message-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.message_type }}",
+              "operation": "equal",
+              "value2": "incoming"
+            },
+            {
+              "value1": "={{ $json.content }}",
+              "operation": "contains",
+              "value2": "support"
+            }
+          ]
+        }
+      },
+      "id": "filter-node",
+      "name": "Filter Support Messages",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "case",
+        "additionalFields": {
+          "name": "Support Request from {{ $json.contact.name }}",
+          "description": "{{ $json.content }}",
+          "status": "New",
+          "priority": "Normal",
+          "source": "Chat",
+          "contactId": "={{ $json.contact.email }}",
+          "assignedUserId": "admin"
+        }
+      },
+      "id": "espocrm-ticket",
+      "name": "Create EspoCRM Case",
+      "type": "n8n-nodes-base.espoCrm",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "espoCrmApi": {
+          "id": "espocrm-credentials",
+          "name": "EspoCRM API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "table": "support_tickets",
+        "columns": {
+          "title": "={{ $json.name }}",
+          "description": "={{ $json.description }}",
+          "status": "open",
+          "priority": "normal",
+          "source": "chat",
+          "customer_email": "={{ $('Chatwoot Webhook').first().json.contact.email }}",
+          "customer_name": "={{ $('Chatwoot Webhook').first().json.contact.name }}",
+          "espocrm_case_id": "={{ $json.id }}",
+          "created_at": "={{ new Date().toISOString() }}"
+        }
+      },
+      "id": "supabase-ticket",
+      "name": "Store in Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-credentials",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendMessage",
+        "conversationId": "={{ $('Chatwoot Webhook').first().json.conversation.id }}",
+        "content": "Thank you for contacting support! I've created ticket #{{ $('Create EspoCRM Case').first().json.number }} for your request. Our team will respond shortly.",
+        "messageType": "outgoing"
+      },
+      "id": "chatwoot-response",
+      "name": "Send Confirmation",
+      "type": "n8n-nodes-base.chatwoot",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "credentials": {
+        "chatwootApi": {
+          "id": "chatwoot-credentials",
+          "name": "Chatwoot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"ticketId\": $('Create EspoCRM Case').first().json.id, \"message\": \"Support ticket created\" } }}"
+      },
+      "id": "response-node",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Chatwoot Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter Support Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Support Messages": {
+      "main": [
+        [
+          {
+            "node": "Create EspoCRM Case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create EspoCRM Case": {
+      "main": [
+        [
+          {
+            "node": "Store in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "createdAt": "2024-01-15T10:00:00.000Z",
+  "updatedAt": "2024-01-15T10:00:00.000Z",
+  "id": "chat-to-ticket-workflow"
+}
+
