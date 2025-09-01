@@ -42,16 +42,8 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      const { error } = await signIn(data.email, data.password);
-      if (!error) {
-        navigate(from, { replace: true });
-        return;
-      }
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      await login(data.email, data.password);
+      navigate(from, { replace: true });
     } catch (error) {
       toast({
         title: "Login failed",
