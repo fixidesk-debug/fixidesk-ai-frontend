@@ -34,25 +34,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string, company?: string) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           first_name: firstName,
           last_name: lastName,
+          company_name: company,
         }
       }
     });
 
-    if (!error) {
+    if (!error && data.user) {
+      // Create profile immediately since email verification is disabled
+      await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email || email,
+          first_name: firstName || '',
+          last_name: lastName || '',
+          company_name: company || '',
+          role: 'customer'
+        });
+
       toast({
         title: "Account created!",
-        description: "Please check your email for verification instructions.",
+        description: "Welcome to FixiDesk! You can now access your dashboard.",
       });
     }
 
@@ -88,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: data.user.email || email,
               first_name: data.user.user_metadata?.first_name || '',
               last_name: data.user.user_metadata?.last_name || '',
+              company_name: data.user.user_metadata?.company_name || '',
               role: 'customer'
             });
         }

@@ -49,11 +49,12 @@ services:
       POSTGRES_USERNAME: fixidesk
       POSTGRES_PASSWORD: fixidesk_password
       POSTGRES_DATABASE: chatwoot
-      MAILER_SENDER_EMAIL: noreply@fixidesk.com
-      SMTP_DOMAIN: fixidesk.com
-      SMTP_PORT: 587
-      SMTP_USERNAME: ""
-      SMTP_PASSWORD: ""
+      MAILER_SENDER_EMAIL: ${CHATWOOT_MAILER_SENDER_EMAIL:-noreply@fixidesk.com}
+      SMTP_DOMAIN: ${CHATWOOT_SMTP_DOMAIN:-fixidesk.com}
+      SMTP_ADDRESS: ${CHATWOOT_SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${CHATWOOT_SMTP_PORT:-587}
+      SMTP_USERNAME: ${CHATWOOT_SMTP_USERNAME}
+      SMTP_PASSWORD: ${CHATWOOT_SMTP_PASSWORD}
       SMTP_AUTHENTICATION: plain
       SMTP_ENABLE_STARTTLS_AUTO: true
     ports:
@@ -99,6 +100,13 @@ services:
       MAUTIC_DB_USER: fixidesk
       MAUTIC_DB_PASSWORD: fixidesk_password
       MAUTIC_TRUSTED_PROXIES: 0.0.0.0/0
+      MAUTIC_MAILER_FROM_EMAIL: ${MAUTIC_MAILER_FROM_EMAIL:-noreply@fixidesk.com}
+      MAUTIC_MAILER_FROM_NAME: ${MAUTIC_MAILER_FROM_NAME:-FixiDesk}
+      MAUTIC_MAILER_HOST: ${MAUTIC_MAILER_HOST:-smtp.gmail.com}
+      MAUTIC_MAILER_PORT: ${MAUTIC_MAILER_PORT:-587}
+      MAUTIC_MAILER_USERNAME: ${MAUTIC_MAILER_USERNAME}
+      MAUTIC_MAILER_PASSWORD: ${MAUTIC_MAILER_PASSWORD}
+      MAUTIC_MAILER_ENCRYPTION: tls
     ports:
       - "8081:80"
     depends_on:

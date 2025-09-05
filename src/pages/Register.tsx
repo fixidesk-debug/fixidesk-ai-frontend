@@ -52,7 +52,8 @@ export default function Register() {
         data.email,
         data.password,
         data.firstName,
-        data.lastName
+        data.lastName,
+        data.company
       );
 
       if (error) {
@@ -63,8 +64,8 @@ export default function Register() {
         });
       } else {
         // Success message is handled in AuthProvider
-        // Redirect to email verification page
-        navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
+        // Redirect directly to dashboard since email verification is disabled
+        navigate('/dashboard');
       }
     } catch (error) {
       toast({
