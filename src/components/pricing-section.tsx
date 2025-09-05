@@ -108,7 +108,7 @@ export function PricingSection() {
                 </div>
               )}
               
-              <Card className={`h-full transition-all duration-300 hover:shadow-beautiful ${
+              <Card className={`h-full flex flex-col transition-all duration-300 hover:shadow-beautiful ${
                 plan.popular 
                   ? 'border-primary shadow-glow' 
                   : 'border-border/50 hover:border-primary/20'
@@ -126,9 +126,9 @@ export function PricingSection() {
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-6">
+                <CardContent className="flex-1 flex flex-col space-y-6">
                   {/* Features */}
-                  <ul className="space-y-3">
+                  <ul className="space-y-3 flex-1">
                     {plan.features.map((featureKey) => (
                       <li key={featureKey} className="flex items-start">
                         <Check className="h-5 w-5 text-success mt-0.5 mr-3 flex-shrink-0" />
@@ -138,7 +138,7 @@ export function PricingSection() {
                   </ul>
 
                   {/* CTA */}
-                  <div className="pt-4">
+                  <div className="pt-4 mt-auto">
                     <Button 
                       variant={plan.popular ? "hero" : "outline"} 
                       size="lg" 
