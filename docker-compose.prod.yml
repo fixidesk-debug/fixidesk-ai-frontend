@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - chatwoot
+      - espocrm
+      - mautic
+      - n8n
+    restart: unless-stopped
+
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    environment:
+      - RAILS_ENV=production
+      - SECRET_KEY_BASE=${CHATWOOT_SECRET_KEY_BASE}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=chatwoot
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=chatwoot_production
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  espocrm:
+    image: espocrm/espocrm:latest
+    environment:
+      - ESPOCRM_DATABASE_HOST=mysql
+      - ESPOCRM_DATABASE_NAME=espocrm
+      - ESPOCRM_DATABASE_USER=espocrm
+      - ESPOCRM_DATABASE_PASSWORD=${MYSQL_PASSWORD}
+      - ESPOCRM_ADMIN_USERNAME=${ESPOCRM_ADMIN_USERNAME}
+      - ESPOCRM_ADMIN_PASSWORD=${ESPOCRM_ADMIN_PASSWORD}
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  mautic:
+    image: mautic/mautic:latest
+    environment:
+      - MAUTIC_DB_HOST=mysql
+      - MAUTIC_DB_NAME=mautic
+      - MAUTIC_DB_USER=mautic
+      - MAUTIC_DB_PASSWORD=${MYSQL_PASSWORD}
+      - MAUTIC_TRUSTED_HOSTS=yourdomain.com
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USERNAME}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
+      - WEBHOOK_URL=https://automation.yourdomain.com
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=chatwoot_production
+      - POSTGRES_USER=chatwoot
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mysql_data:
+  redis_data:
+  n8n_data:
