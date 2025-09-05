@@ -60,50 +60,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string, totpCode?: string) => {
-    console.log('AuthProvider: signIn called with:', { email, hasPassword: !!password, hasTOTP: !!totpCode });
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    console.log('AuthProvider: signIn result:', { error: !!error, errorMessage: error?.message });
-
-    if (!error) {
-      // Check if 2FA is enabled for this user
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('two_factor_enabled')
-        .eq('email', email)
-        .single();
-
-      console.log('AuthProvider: Profile check result:', { profile: !!profile, twoFactorEnabled: profile?.two_factor_enabled });
-
-      if (profile?.two_factor_enabled && !totpCode) {
-        // Return special error to indicate 2FA is required
-        console.log('AuthProvider: 2FA required, returning 2FA_REQUIRED error');
-        return { error: new Error('2FA_REQUIRED') };
-      }
-
-      if (profile?.two_factor_enabled && totpCode) {
-        // Verify TOTP code
-        console.log('AuthProvider: Verifying 2FA code');
-        const { error: verifyError } = await verify2FA(totpCode);
-        if (verifyError) {
-          console.log('AuthProvider: 2FA verification failed:', verifyError.message);
-          return { error: verifyError };
-        }
-      }
-
-      console.log('AuthProvider: Login successful, showing toast');
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      // Don't force redirect, let React Router handle it
-    }
 
-    return { error };
+      if (error) {
+        console.error('Login error:', error);
+        return { error };
+      }
+
+      if (data.user) {
+        // Check if profile exists, create if missing
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError && profileError.code === 'PGRST116') {
+          // Profile doesn't exist, create it
+          await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email || email,
+              first_name: data.user.user_metadata?.first_name || '',
+              last_name: data.user.user_metadata?.last_name || '',
+              role: 'customer'
+            });
+        }
+
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
+      }
+
+      return { error: null };
+    } catch (err) {
+      console.error('Unexpected login error:', err);
+      return { error: new Error('Login failed. Please try again.') };
+    }
   };
 
   const signOut = async () => {
