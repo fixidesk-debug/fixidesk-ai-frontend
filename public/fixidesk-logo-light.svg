@@ -1,0 +1,18 @@
+<svg width="400" height="120" viewBox="0 0 400 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Headset Icon -->
+  <circle cx="60" cy="60" r="45" fill="#1e3a8a" stroke="white" stroke-width="6"/>
+  <rect x="25" y="35" width="70" height="50" rx="25" fill="#3b82f6"/>
+  <circle cx="40" cy="50" r="4" fill="#1e3a8a"/>
+  <circle cx="80" cy="50" r="4" fill="#1e3a8a"/>
+  <path d="M35 65 Q60 80 85 65" stroke="#1e3a8a" stroke-width="3" fill="none"/>
+  <!-- Headset Arms -->
+  <rect x="15" y="45" width="20" height="30" rx="10" fill="#1e3a8a"/>
+  <rect x="85" y="45" width="20" height="30" rx="10" fill="#1e3a8a"/>
+  <!-- Microphone -->
+  <rect x="85" y="70" width="8" height="20" rx="4" fill="#1e3a8a"/>
+  <circle cx="89" cy="95" r="3" fill="#1e3a8a"/>
+  
+  <!-- FixiDesk Text -->
+  <text x="130" y="45" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#1e3a8a">FixiDesk</text>
+  <text x="130" y="75" font-family="Arial, sans-serif" font-size="16" fill="#6b7280">AI-powered customer service</text>
+</svg>

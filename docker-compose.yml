@@ -1,0 +1,167 @@
+version: '3.8'
+
+services:
+  # Redis for caching and job queues
+  redis:
+    image: redis:7-alpine
+    container_name: fixidesk_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fixidesk_network
+
+  # PostgreSQL for services that need it
+  postgres:
+    image: postgres:15
+    container_name: fixidesk_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fixidesk
+      POSTGRES_USER: fixidesk
+      POSTGRES_PASSWORD: fixidesk_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fixidesk_network
+
+  # Chatwoot - Customer Support Chat
+  chatwoot_web:
+    image: chatwoot/chatwoot:latest
+    container_name: fixidesk_chatwoot
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      RAILS_ENV: production
+      INSTALLATION_ENV: docker
+      SECRET_KEY_BASE: replace_with_your_secret_key_base
+      FRONTEND_URL: http://localhost:3000
+      DEFAULT_LOCALE: en
+      FORCE_SSL: false
+      ENABLE_ACCOUNT_SIGNUP: true
+      REDIS_URL: redis://redis:6379
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USERNAME: fixidesk
+      POSTGRES_PASSWORD: fixidesk_password
+      POSTGRES_DATABASE: chatwoot
+      MAILER_SENDER_EMAIL: noreply@fixidesk.com
+      SMTP_DOMAIN: fixidesk.com
+      SMTP_PORT: 587
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      SMTP_AUTHENTICATION: plain
+      SMTP_ENABLE_STARTTLS_AUTO: true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - chatwoot_data:/app/storage
+    networks:
+      - fixidesk_network
+
+  # EspoCRM - Customer Relationship Management
+  espocrm:
+    image: espocrm/espocrm:latest
+    container_name: fixidesk_espocrm
+    restart: unless-stopped
+    environment:
+      ESPOCRM_DATABASE_HOST: postgres
+      ESPOCRM_DATABASE_NAME: espocrm
+      ESPOCRM_DATABASE_USER: fixidesk
+      ESPOCRM_DATABASE_PASSWORD: fixidesk_password
+      ESPOCRM_ADMIN_USERNAME: admin
+      ESPOCRM_ADMIN_PASSWORD: admin123
+      ESPOCRM_SITE_URL: http://localhost:8080
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    volumes:
+      - espocrm_data:/var/www/html
+    networks:
+      - fixidesk_network
+
+  # Mautic - Marketing Automation
+  mautic:
+    image: mautic/mautic:latest
+    container_name: fixidesk_mautic
+    restart: unless-stopped
+    environment:
+      MAUTIC_DB_HOST: postgres
+      MAUTIC_DB_NAME: mautic
+      MAUTIC_DB_USER: fixidesk
+      MAUTIC_DB_PASSWORD: fixidesk_password
+      MAUTIC_TRUSTED_PROXIES: 0.0.0.0/0
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres
+    volumes:
+      - mautic_data:/var/www/html
+    networks:
+      - fixidesk_network
+
+  # n8n - Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: fixidesk_n8n
+    restart: unless-stopped
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: fixidesk
+      DB_POSTGRESDB_PASSWORD: fixidesk_password
+      N8N_BASIC_AUTH_ACTIVE: true
+      N8N_BASIC_AUTH_USER: admin
+      N8N_BASIC_AUTH_PASSWORD: admin123
+      WEBHOOK_URL: http://localhost:5678
+      GENERIC_TIMEZONE: UTC
+    ports:
+      - "5678:5678"
+    depends_on:
+      - postgres
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - fixidesk_network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: fixidesk_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - chatwoot_web
+      - espocrm
+      - mautic
+      - n8n
+    networks:
+      - fixidesk_network
+
+volumes:
+  redis_data:
+  postgres_data:
+  chatwoot_data:
+  espocrm_data:
+  mautic_data:
+  n8n_data:
+
+networks:
+  fixidesk_network:
+    driver: bridge
+

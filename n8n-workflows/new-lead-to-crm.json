@@ -1,0 +1,150 @@
+{
+  "name": "New Lead to CRM",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-node",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "new-lead-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "lead",
+        "additionalFields": {
+          "firstName": "={{ $json.firstName }}",
+          "lastName": "={{ $json.lastName }}",
+          "emailAddress": "={{ $json.email }}",
+          "phoneNumber": "={{ $json.phone }}",
+          "accountName": "={{ $json.company }}",
+          "source": "Website Form"
+        }
+      },
+      "id": "espocrm-node",
+      "name": "EspoCRM",
+      "type": "n8n-nodes-base.espoCrm",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "espoCrmApi": {
+          "id": "espocrm-credentials",
+          "name": "EspoCRM API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "contact",
+        "additionalFields": {
+          "email": "={{ $json.email }}",
+          "firstName": "={{ $json.firstName }}",
+          "lastName": "={{ $json.lastName }}",
+          "phone": "={{ $json.phone }}",
+          "company": "={{ $json.company }}",
+          "tags": ["new-lead", "website"]
+        }
+      },
+      "id": "supabase-node",
+      "name": "Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-credentials",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addContactToSegment",
+        "contactId": "={{ $json.id }}",
+        "segmentId": "new-leads-segment"
+      },
+      "id": "mautic-node",
+      "name": "Mautic",
+      "type": "n8n-nodes-base.mautic",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "credentials": {
+        "mauticApi": {
+          "id": "mautic-credentials",
+          "name": "Mautic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"leadId\": $('EspoCRM').first().json.id, \"message\": \"Lead created successfully\" } }}"
+      },
+      "id": "response-node",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "EspoCRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EspoCRM": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Mautic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mautic": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "createdAt": "2024-01-15T10:00:00.000Z",
+  "updatedAt": "2024-01-15T10:00:00.000Z",
+  "id": "new-lead-to-crm-workflow"
+}
+
