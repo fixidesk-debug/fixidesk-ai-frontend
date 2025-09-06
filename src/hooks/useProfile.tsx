@@ -14,7 +14,7 @@ interface Profile {
   created_at: string;
   updated_at: string;
   // Optional fields present after SQL setup
-  permissions?: Record<string, any> | null;
+  permissions?: Record<string, unknown> | null;
   is_active?: boolean | null;
 }
 
@@ -35,7 +35,7 @@ export function useProfile() {
 
     console.log('useProfile: User found, fetching profile for:', user.id);
     fetchProfile();
-  }, [user?.id]);
+  }, [user, fetchProfile]);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -47,13 +47,13 @@ export function useProfile() {
         .eq('id', user?.id)
         .single();
 
-      console.log('useProfile: Profile fetch result:', { data: !!data, error: !!error, errorMessage: error?.message });
+      console.log('useProfile: Profile fetch result:', { data: !!data, error: !!error, code: (error as unknown as { code?: string })?.code, details: (error as unknown as { details?: string })?.details, message: error?.message });
 
       if (error) {
         // If profile doesn't exist, try to create one
         if (error.code === 'PGRST116') { // No rows returned
           console.log('useProfile: Profile not found, creating one');
-          
+
           try {
             const { data: newProfile, error: createError } = await supabase
               .from('profiles')
@@ -62,14 +62,14 @@ export function useProfile() {
                 email: user?.email,
                 first_name: user?.user_metadata?.first_name || null,
                 last_name: user?.user_metadata?.last_name || null,
-                role: 'customer' // Default role
+                role: 'customer'
               })
               .select()
               .single();
 
             if (createError) {
               console.error('useProfile: Error creating profile:', createError);
-              
+
               // If we can't create a profile due to RLS, create a minimal profile object
               if (createError.code === '42501') { // Insufficient privilege
                 console.log('useProfile: Creating minimal profile object due to RLS restrictions');
@@ -90,15 +90,37 @@ export function useProfile() {
                 setProfile(minimalProfile);
                 return;
               }
-              
+
+              // If table is missing, fall back to minimal profile
+              if (createError.code === '42P01' || /does not exist/i.test(createError.message || '')) {
+                console.warn('useProfile: profiles table missing, using minimal profile');
+                const minimalProfile: Profile = {
+                  id: user?.id || '',
+                  email: user?.email || '',
+                  first_name: user?.user_metadata?.first_name || null,
+                  last_name: user?.user_metadata?.last_name || null,
+                  avatar_url: null,
+                  company_name: null,
+                  phone: null,
+                  role: 'customer',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  permissions: null,
+                  is_active: true,
+                };
+                setProfile(minimalProfile);
+                return;
+              }
+
               throw createError;
             }
 
             console.log('useProfile: Profile created successfully:', newProfile);
             setProfile(newProfile as Profile);
             return;
-          } catch (createErr) {
+          } catch (createErr: unknown) {
             console.error('useProfile: Error during profile creation:', createErr);
+            const message = createErr instanceof Error ? createErr.message : String(createErr);
             // Fall back to minimal profile
             const minimalProfile: Profile = {
               id: user?.id || '',
@@ -118,13 +140,41 @@ export function useProfile() {
             return;
           }
         }
+
+        // If table is missing, degrade gracefully
+        if (error.code === '42P01' || /does not exist/i.test(error.message || '')) {
+          console.warn('useProfile: profiles table missing on select, using minimal profile');
+          const minimalProfile: Profile = {
+            id: user?.id || '',
+            email: user?.email || '',
+            first_name: user?.user_metadata?.first_name || null,
+            last_name: user?.user_metadata?.last_name || null,
+            avatar_url: null,
+            company_name: null,
+            phone: null,
+            role: 'customer',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            permissions: null,
+            is_active: true,
+          };
+          setProfile(minimalProfile);
+          return;
+        }
+
         throw error;
       }
-      
+
       setProfile(data as Profile);
     } catch (err: unknown) {
-      console.error('useProfile: Error fetching profile:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      try {
+        const msg = err instanceof Error ? `${err.name}: ${err.message}` : JSON.stringify(err);
+        console.error('useProfile: Error fetching profile:', msg);
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } catch {
+        console.error('useProfile: Error fetching profile: <unserializable error>');
+        setError('An error occurred');
+      }
     } finally {
       setLoading(false);
     }

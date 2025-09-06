@@ -1,0 +1,29 @@
+{
+  "name": "Missed Call Follow-up",
+  "version": "1.0.0",
+  "trigger": {
+    "type": "WEBHOOK",
+    "name": "call_missed",
+    "payload_example": {
+      "organization_id": "00000000-0000-0000-0000-000000000000",
+      "contact": { "name": "Jane Doe", "phone": "+15551234567" },
+      "last_intent": "pricing question"
+    }
+  },
+  "steps": [
+    {
+      "type": "CODE",
+      "name": "draft_sms",
+      "language": "javascript",
+      "code": "const name = (trigger.payload.contact?.name||'there');\nconst intent = trigger.payload.last_intent||'your question';\nconst msg = `Hi ${name}, sorry we missed your call. Can I help with ${intent}? Reply here and we'll assist right away.`;\nreturn { msg };"
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "name": "send_sms",
+      "method": "POST",
+      "url": "={{ env.SMS_WEBHOOK_URL }}",
+      "headers": { "Content-Type": "application/json" },
+      "body": { "to": "={{ trigger.payload.contact.phone }}", "text": "={{ steps.draft_sms.output.msg }}" }
+    }
+  ]
+}

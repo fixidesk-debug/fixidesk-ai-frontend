@@ -15,10 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RoleDashboard } from "@/components/dashboard/role-dashboard";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
+import { User } from "@supabase/supabase-js";
 
 interface DashboardStats {
   active_tickets: number;
@@ -29,6 +30,7 @@ interface DashboardStats {
   resolved_change: string;
   response_change: string;
   satisfaction_change: string;
+  [key: string]: string | number; // Add index signature for dynamic access
 }
 
 interface Activity {
@@ -49,12 +51,12 @@ interface TeamMember {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user } = useAuth() as { user: User | null };
   const { t } = useI18n();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<Partial<DashboardStats>>({});
   const [activities, setActivities] = useState<Activity[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   console.log('Dashboard: Render state:', { 
     hasUser: !!user, 
@@ -73,9 +75,15 @@ export default function Dashboard() {
     } else {
       console.log('Dashboard: No user found');
     }
-  }, [user]);
+  }, [user, loadDashboardData]);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
     try {
       await Promise.all([
         loadStats(),
@@ -87,15 +95,27 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, loadStats, loadRecentActivity, loadTeamMembers]);
 
   const loadStats = async () => {
+    if (!user?.id) {
+      console.error('No user ID available');
+      return;
+    }
+    
     try {
-      const { data, error } = await supabase.rpc('get_dashboard_stats', {
-        user_id: user?.id
-      });
+      type DashboardStatsResponse = {
+        data: DashboardStats | null;
+        error: Error | null;
+      };
       
-      if (data && !error) {
+      const { data, error } = await supabase.rpc('get_dashboard_stats', {
+        user_id: user.id
+      }) as unknown as DashboardStatsResponse;
+      
+      if (error) throw error;
+      
+      if (data) {
         setStats(data);
       }
     } catch (error) {
@@ -171,24 +191,8 @@ export default function Dashboard() {
   return (
     <RoleDashboard>
       <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold"
-          >
-{t('dashboard.welcome')}, {user?.user_metadata?.first_name || 'User'}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-muted-foreground mt-2"
-          >
-{t('dashboard.subtitle')}
-          </motion.p>
-        </div>
+        {/* Header - Removed duplicate greeting as it's already shown in the topbar */}
+        <div className="h-8"></div>
 
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -283,9 +287,9 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="lg:col-span-2"
+            className="lg:col-span-2 h-full"
           >
-            <Card>
+            <Card className="h-full">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -340,9 +344,10 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
+            className="h-full"
           >
             {/* Team Status */}
-            <Card className="mt-6">
+            <Card className="h-full">
               <CardHeader>
                 <CardTitle>{t('dashboard.teamStatus')}</CardTitle>
                 <CardDescription>Who's online right now</CardDescription>

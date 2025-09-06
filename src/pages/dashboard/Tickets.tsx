@@ -147,7 +147,7 @@ export default function Tickets() {
   const handleAssignToMe = async (id: string) => {
     if (!user) return;
     try {
-      updateTicket({ id, updates: { assigned_agent_id: user.id } as any });
+      updateTicket({ id, updates: { assigned_agent_id: user.id } });
       toast({ title: 'Assigned', description: 'Ticket assigned to you.' });
     } catch (e) {
       toast({ title: 'Assignment failed', description: 'Could not assign ticket.', variant: 'destructive' });

@@ -14,6 +14,7 @@ interface TicketWithDetails extends Ticket {
   customer_last_name?: string;
   customer_phone?: string;
   customer_company?: string;
+  customer_email?: string;
   agent_first_name?: string;
   agent_last_name?: string;
   category_name?: string;
@@ -53,7 +54,7 @@ export const useTickets = (options: UseTicketsOptions = {}) => {
         .from('tickets')
         .select(`
           *,
-          customer:profiles!tickets_customer_id_fkey(first_name, last_name, phone, company_name),
+          customer:profiles!tickets_customer_id_fkey(first_name, last_name, phone, company_name, email),
           assigned_agent:profiles!tickets_assigned_agent_id_fkey(first_name, last_name),
           category:ticket_categories(name, color),
           organization:organizations(name)
@@ -87,17 +88,47 @@ export const useTickets = (options: UseTicketsOptions = {}) => {
       if (error) throw error;
 
       // Transform data to match expected interface
+      interface Customer {
+        first_name?: string;
+        last_name?: string;
+        phone?: string;
+        company_name?: string;
+        email?: string;
+      }
+
+      interface AssignedAgent {
+        first_name?: string;
+        last_name?: string;
+      }
+
+      interface Category {
+        name?: string;
+        color?: string;
+      }
+
+      interface Organization {
+        name?: string;
+      }
+
+      interface ExtendedTicket extends Ticket {
+        customer?: Customer;
+        assigned_agent?: AssignedAgent;
+        category?: Category;
+        organization?: Organization;
+      }
+
       const transformedTickets: TicketWithDetails[] = data?.map(ticket => ({
         ...ticket,
-        customer_first_name: ticket.customer?.first_name,
-        customer_last_name: ticket.customer?.last_name,
-        customer_phone: ticket.customer?.phone,
-        customer_company: ticket.customer?.company_name,
-        agent_first_name: ticket.assigned_agent?.first_name,
-        agent_last_name: ticket.assigned_agent?.last_name,
-        category_name: ticket.category?.name,
-        category_color: ticket.category?.color,
-        organization_name: ticket.organization?.name,
+        customer_first_name: (ticket as ExtendedTicket).customer?.first_name,
+        customer_last_name: (ticket as ExtendedTicket).customer?.last_name,
+        customer_phone: (ticket as ExtendedTicket).customer?.phone,
+        customer_company: (ticket as ExtendedTicket).customer?.company_name,
+        customer_email: (ticket as ExtendedTicket).customer?.email,
+        agent_first_name: (ticket as ExtendedTicket).assigned_agent?.first_name,
+        agent_last_name: (ticket as ExtendedTicket).assigned_agent?.last_name,
+        category_name: (ticket as ExtendedTicket).category?.name,
+        category_color: (ticket as ExtendedTicket).category?.color,
+        organization_name: (ticket as ExtendedTicket).organization?.name,
       })) || [];
 
       return {

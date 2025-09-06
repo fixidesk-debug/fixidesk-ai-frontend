@@ -12,6 +12,12 @@ import { motion } from "framer-motion";
 import { Check, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
+interface Permissions {
+  plan?: string;
+  subscription_active?: boolean;
+  subscribed_at?: string;
+}
+
 const plans = [
   {
     id: 'starter',
@@ -84,7 +90,7 @@ export default function Billing() {
 
   useEffect(() => {
     // choose default plan from permissions if present
-    const currentPlan = (profile?.permissions as any)?.plan;
+    const currentPlan = (profile?.permissions as Permissions)?.plan;
     if (currentPlan) setPlan(currentPlan);
   }, [profile?.permissions]);
 
@@ -217,5 +223,3 @@ export default function Billing() {
     </DashboardLayout>
   );
 }
-
-

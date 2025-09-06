@@ -116,6 +116,8 @@ export type Database = {
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
+          is_active: boolean | null
+          last_login: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -128,6 +130,8 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          is_active?: boolean | null
+          last_login?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -140,6 +144,8 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          is_active?: boolean | null
+          last_login?: string | null
         }
         Relationships: []
       }
@@ -227,6 +233,7 @@ export type Database = {
           status: Database["public"]["Enums"]["ticket_status"]
           title: string
           updated_at: string
+          customer_email: string | null
         }
         Insert: {
           assigned_agent_id?: string | null
@@ -242,6 +249,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["ticket_status"]
           title: string
           updated_at?: string
+          customer_email?: string | null
         }
         Update: {
           assigned_agent_id?: string | null
@@ -257,6 +265,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["ticket_status"]
           title?: string
           updated_at?: string
+          customer_email?: string | null
         }
         Relationships: [
           {

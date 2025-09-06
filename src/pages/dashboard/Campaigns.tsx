@@ -21,7 +21,7 @@ import {
   Pause,
   BarChart3
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -60,9 +60,9 @@ export default function Campaigns() {
     if (user) {
       loadCampaignData();
     }
-  }, [user]);
+  }, [user, loadCampaignData]);
 
-  const loadCampaignData = async () => {
+  const loadCampaignData = useCallback(async () => {
     try {
       const { data: campaignData, error } = await supabase
         .from('campaigns')
@@ -90,7 +90,7 @@ export default function Campaigns() {
     } catch (error) {
       console.error('Error loading campaigns:', error);
     }
-  };
+  }, [user]);
 
   const handleCreateCampaign = async () => {
     if (!newCampaign.name || !newCampaign.subject) {

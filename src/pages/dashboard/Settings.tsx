@@ -1,6 +1,8 @@
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/components/settings/profile-settings";
+import { AIControls } from "@/components/settings/ai-controls";
+import { AIKnowledge } from "@/components/settings/ai-knowledge";
 
 export default function Settings() {
   return (
@@ -16,12 +18,22 @@ export default function Settings() {
 
         {/* Main Content */}
         <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-1">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="ai">AI</TabsTrigger>
+            <TabsTrigger value="knowledge">Knowledge</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4">
             <ProfileSettings />
+          </TabsContent>
+
+          <TabsContent value="ai" className="space-y-4">
+            <AIControls />
+          </TabsContent>
+
+          <TabsContent value="knowledge" className="space-y-4">
+            <AIKnowledge />
           </TabsContent>
         </Tabs>
       </div>

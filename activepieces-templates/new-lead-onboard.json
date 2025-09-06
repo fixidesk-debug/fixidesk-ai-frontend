@@ -1,0 +1,29 @@
+{
+  "name": "New Lead Onboard",
+  "version": "1.0.0",
+  "trigger": {
+    "type": "WEBHOOK",
+    "name": "crm_lead_created",
+    "payload_example": {
+      "organization_id": "00000000-0000-0000-0000-000000000000",
+      "lead": { "email": "lead@example.com", "name": "John Smith", "company": "Acme" }
+    }
+  },
+  "steps": [
+    {
+      "type": "HTTP_REQUEST",
+      "name": "mautic_add_to_segment",
+      "method": "POST",
+      "url": "={{ env.MAUTIC_BASE_URL }}/api/segments/{{ env.MAUTIC_SEGMENT_ID }}/contact/add/{{ trigger.payload.lead.email }}",
+      "headers": { "Authorization": "Bearer {{ env.MAUTIC_TOKEN }}" }
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "name": "notify_slack",
+      "method": "POST",
+      "url": "={{ env.SLACK_WEBHOOK_URL }}",
+      "headers": { "Content-Type": "application/json" },
+      "body": { "text": "New lead: {{ trigger.payload.lead.name }} ({{ trigger.payload.lead.email }}) from {{ trigger.payload.lead.company }}" }
+    }
+  ]
+}

@@ -41,7 +41,7 @@ import CRM from "./pages/dashboard/CRM";
 import Campaigns from "./pages/dashboard/Campaigns";
 import Automations from "./pages/dashboard/Automations";
 import CallAssistant from "./pages/dashboard/CallAssistant";
-import ChatWidget from "./pages/dashboard/ChatWidget";
+import AIChat from "./pages/dashboard/AIChat";
 import Analytics from "./pages/dashboard/Analytics";
 import UserManagement from "./pages/dashboard/UserManagement";
 import Settings from "./pages/dashboard/Settings";
@@ -97,7 +97,7 @@ function AppRoutes() {
       <Route path="/dashboard/campaigns" element={<AuthGuard><Campaigns /></AuthGuard>} />
       <Route path="/dashboard/automations" element={<AuthGuard><Automations /></AuthGuard>} />
       <Route path="/dashboard/calls" element={<AuthGuard><CallAssistant /></AuthGuard>} />
-      <Route path="/dashboard/chat" element={<AuthGuard><ChatWidget /></AuthGuard>} />
+      <Route path="/dashboard/ai-chat" element={<AuthGuard><AIChat /></AuthGuard>} />
       <Route path="/dashboard/analytics" element={<AuthGuard><Analytics /></AuthGuard>} />
       <Route path="/dashboard/users" element={<AuthGuard><UserManagement /></AuthGuard>} />
       <Route path="/dashboard/settings" element={<AuthGuard><Settings /></AuthGuard>} />
