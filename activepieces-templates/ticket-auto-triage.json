@@ -1,0 +1,52 @@
+{
+  "name": "Ticket Auto Triage",
+  "version": "1.0.0",
+  "trigger": {
+    "type": "WEBHOOK",
+    "name": "ticket_created",
+    "payload_example": {
+      "organization_id": "00000000-0000-0000-0000-000000000000",
+      "ticket_id": "00000000-0000-0000-0000-000000000000",
+      "subject": "Customer cannot login",
+      "messages": [
+        { "role": "customer", "content": "I can't login to product X" }
+      ]
+    }
+  },
+  "steps": [
+    {
+      "type": "HTTP_REQUEST",
+      "name": "rag_suggest",
+      "method": "POST",
+      "url": "={{ env.API_BASE_URL }}/api/orchestrator/suggest-reply",
+      "headers": { "Content-Type": "application/json", "Authorization": "Bearer {{ env.API_TOKEN }}" },
+      "body": {
+        "organization_id": "={{ trigger.payload.organization_id }}",
+        "last_messages": "={{ trigger.payload.messages }}",
+        "top_k": 5
+      }
+    },
+    {
+      "type": "CODE",
+      "name": "classify_priority",
+      "language": "javascript",
+      "code": "const txt = steps.rag_suggest.body.text || '';\nlet priority = 'normal';\nif (/refund|payment|billing/i.test(txt)) priority = 'high';\nif (/security|breach|hacked/i.test(txt)) priority = 'urgent';\nreturn { priority, ai_text: txt, confidence: steps.rag_suggest.body.confidence, sources: steps.rag_suggest.body.sources };"
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "name": "update_ticket",
+      "method": "PATCH",
+      "url": "={{ env.API_BASE_URL }}/api/tickets/{{ trigger.payload.ticket_id }}",
+      "headers": { "Content-Type": "application/json", "Authorization": "Bearer {{ env.API_TOKEN }}" },
+      "body": { "priority": "={{ steps.classify_priority.output.priority }}" }
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "name": "add_ai_comment",
+      "method": "POST",
+      "url": "={{ env.API_BASE_URL }}/api/tickets/{{ trigger.payload.ticket_id }}/messages",
+      "headers": { "Content-Type": "application/json", "Authorization": "Bearer {{ env.API_TOKEN }}" },
+      "body": { "message": "Suggested reply ({{ Math.round(steps.classify_priority.output.confidence * 100) }}%):\n\n{{ steps.classify_priority.output.ai_text }}" }
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
+const http = require('http');
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +10,9 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Orchestrator routes
+const orchestrator = require('./orchestrator');
 
 // Supabase client with service role key for server-side operations
 const supabase = createClient(
@@ -516,9 +520,13 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+try { orchestrator.registerRoutes(app); } catch (e) { console.warn('Orchestrator routes not registered:', e.message); }
+
+server.listen(PORT, () => {
   console.log(`FixiDesk API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
+  try { orchestrator.initTwilioWebSocket(server); } catch (e) { console.warn('Twilio WS init failed:', e.message); }
 });
 
 module.exports = app;

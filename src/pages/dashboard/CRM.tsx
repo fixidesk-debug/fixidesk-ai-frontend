@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,13 +68,7 @@ export default function CRM() {
   });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadCRMData();
-    }
-  }, [user]);
-
-  const loadCRMData = async () => {
+  const loadCRMData = useCallback(async () => {
     try {
       // Load marketing contacts as leads
       const marketingContacts = await MarketingAPI.getContacts(50);
@@ -133,7 +127,13 @@ export default function CRM() {
         conversion_rate: 0
       });
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadCRMData();
+    }
+  }, [user, loadCRMData]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -389,3 +389,4 @@ export default function CRM() {
     </DashboardLayout>
   );
 }
+

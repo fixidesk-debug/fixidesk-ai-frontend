@@ -73,22 +73,31 @@ export const settingsApi = {
     update: (data: { name: string; email: string }) =>
       api.patch('/settings/profile', data),
   },
-  
+
   company: {
     get: () => api.get('/settings/company'),
     update: (data: { name: string; domain: string; logo?: string }) =>
       api.patch('/settings/company', data),
   },
-  
+
   integrations: {
     get: () => api.get('/settings/integrations'),
     toggle: (integration: string, enabled: boolean) =>
       api.patch(`/settings/integrations/${integration}`, { enabled }),
   },
-  
+
   billing: {
     get: () => api.get('/settings/billing'),
     updatePlan: (plan: string) =>
       api.post('/settings/billing/plan', { plan }),
   },
+};
+
+export const orchestratorApi = {
+  suggestReply: (payload: { organization_id: string; last_messages: { role: string; content: string }[]; top_k?: number }) =>
+    api.post('/orchestrator/suggest-reply', payload),
+  ingestText: (payload: { organization_id: string; name: string; content: string }) =>
+    api.post('/orchestrator/ingest/text', payload),
+  ingestUrl: (payload: { organization_id: string; url: string; name?: string }) =>
+    api.post('/orchestrator/ingest/url', payload),
 };

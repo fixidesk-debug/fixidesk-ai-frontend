@@ -1,13 +1,13 @@
 // Input validation and sanitization
 export const sanitizeInput = (input: string): string => {
   return input
-    .replace(/[<>\"'&]/g, (match) => {
+    .replace(/[<>"'&]/g, (match) => {
       const escapeMap: Record<string, string> = {
-        '<': '&lt;',
-        '>': '&gt;',
+        '<' : '&lt;',
+        '>' : '&gt;',
         '"': '&quot;',
         "'": '&#x27;',
-        '&': '&amp;'
+        '&' : '&amp;'
       };
       return escapeMap[match] || match;
     })

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle, UserPlus, Shield, Headphones, UserCheck } from "lucide-react";
@@ -35,16 +35,7 @@ export default function AcceptInvitation() {
 
   const token = searchParams.get('token');
 
-  useEffect(() => {
-    if (token) {
-      fetchInvitation();
-    } else {
-      setError('Invalid invitation link');
-      setIsLoading(false);
-    }
-  }, [token]);
-
-  const fetchInvitation = async () => {
+  const fetchInvitation = useCallback(async () => {
     if (!token) return;
 
     try {
@@ -86,7 +77,16 @@ export default function AcceptInvitation() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetchInvitation();
+    } else {
+      setError('Invalid invitation link');
+      setIsLoading(false);
+    }
+  }, [token, fetchInvitation]);
 
   const handleAcceptInvitation = async () => {
     if (!token || !user) {

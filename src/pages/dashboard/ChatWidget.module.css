@@ -1,0 +1,22 @@
+.chatMessage {
+  word-break: break-word;
+}
+
+.agentMessage {
+  background-color: white;
+  dark-mode-background-color: #334155;
+  border-radius: 12px 12px 4px 12px;
+  color: #334155; /* slate-700 */
+  dark-mode-color: #cbd5e1; /* slate-300 */
+}
+
+.userMessage {
+   background-image: linear-gradient(to right, #3b82f6, #8b5cf6); /* from-blue-500 to-purple-500 */
+   color: white;
+   border-radius: 12px 12px 12px 4px;
+}
+
+.chatMessageText {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+}

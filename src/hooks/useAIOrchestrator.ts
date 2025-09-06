@@ -1,7 +1,25 @@
 import { useState, useEffect } from 'react';
 
+interface AIStats {
+  tickets: {
+    total_tickets: number;
+    open_tickets: number;
+    resolved_tickets: number;
+  };
+  campaigns: {
+    active_campaigns: number;
+    total_subscribers: number;
+    avg_open_rate: number;
+  };
+  calls: {
+    total_calls: number;
+    active_calls: number;
+    success_rate: number;
+  };
+}
+
 export function useAIOrchestrator() {
-  const [stats, setStats] = useState<any>({});
+  const [stats, setStats] = useState<AIStats | null>(null);
 
   useEffect(() => {
     const processData = async () => {

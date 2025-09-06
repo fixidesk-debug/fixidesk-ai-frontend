@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, 
@@ -83,9 +83,9 @@ export default function UserManagement() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -103,7 +103,7 @@ export default function UserManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
     try {

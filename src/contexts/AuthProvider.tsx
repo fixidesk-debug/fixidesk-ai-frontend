@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!error && data.user) {
       // Create profile immediately since email verification is disabled
-      await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: data.user.id,
@@ -57,8 +57,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           first_name: firstName || '',
           last_name: lastName || '',
           company_name: company || '',
-          role: 'customer'
+          role: 'customer',
+          permissions: {},
+          is_active: true,
+          two_factor_enabled: false
         });
+
+      if (profileError) {
+        console.error('Profile creation error during signup:', profileError);
+        // Don't fail the signup if profile creation fails
+        // The trigger should handle this, but we'll log it
+      }
 
       toast({
         title: "Account created!",
@@ -90,8 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .single();
 
         if (profileError && profileError.code === 'PGRST116') {
-          // Profile doesn't exist, create it
-          await supabase
+          // Profile doesn't exist, create it with all required fields
+          const { error: insertError } = await supabase
             .from('profiles')
             .insert({
               id: data.user.id,
@@ -99,8 +108,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               first_name: data.user.user_metadata?.first_name || '',
               last_name: data.user.user_metadata?.last_name || '',
               company_name: data.user.user_metadata?.company_name || '',
-              role: 'customer'
+              role: 'customer',
+              permissions: {},
+              is_active: true,
+              two_factor_enabled: false
             });
+
+          if (insertError) {
+            console.error('Profile creation error:', insertError);
+            // Don't fail the login if profile creation fails
+            // The trigger should handle this, but we'll log it
+          }
+        } else if (profileError) {
+          console.error('Profile fetch error:', profileError);
+          // Don't fail the login for profile fetch errors
         }
 
         toast({

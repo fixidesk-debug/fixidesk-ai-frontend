@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,10 +20,13 @@ import {
   Send,
   Paperclip,
   MoreHorizontal,
+  Sparkles,
+  Copy as CopyIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { orchestratorApi } from "@/lib/api";
 
 interface Ticket {
   id: string;
@@ -33,11 +36,13 @@ interface Ticket {
   priority: string;
   created_at: string;
   updated_at: string;
+  customer_id?: string;
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
   customer_company?: string;
   assigned_agent?: string;
+  organization_id?: string | null;
 }
 
 interface Message {
@@ -56,14 +61,16 @@ export default function TicketDetail() {
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<{ text: string; confidence: number; sources: { index: number; document_id: string; chunk_idx?: number; preview: string }[] } | null>(null);
 
   useEffect(() => {
     if (id && user) {
       loadTicketData();
     }
-  }, [id, user]);
+  }, [id, user, loadTicketData]);
 
-  const loadTicketData = async () => {
+  const loadTicketData = useCallback(async () => {
     try {
       const { data: ticketData, error: ticketError } = await supabase
         .from('tickets')
@@ -72,20 +79,71 @@ export default function TicketDetail() {
         .single();
 
       if (ticketData && !ticketError) {
-        setTicket(ticketData);
+        const { data: customerData } = await supabase
+          .from('profiles')
+          .select('first_name,last_name,phone,company_name,email')
+          .eq('id', ticketData.customer_id)
+          .single();
+
+        setTicket({
+          ...ticketData,
+          customer_name: [customerData?.first_name, customerData?.last_name].filter(Boolean).join(' ') || 'Customer',
+          customer_email: customerData?.email || '',
+          customer_phone: customerData?.phone || '',
+          customer_company: customerData?.company_name || ''
+        });
       }
 
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('ticket_messages')
-        .select('*')
+      const { data: commentsData, error: commentsError } = await supabase
+        .from('ticket_comments')
+        .select(`
+          id,
+          content,
+          created_at,
+          author:profiles(id, first_name, last_name, email)
+        `)
         .eq('ticket_id', id)
         .order('created_at', { ascending: true });
 
-      if (messagesData && !messagesError) {
-        setMessages(messagesData);
+      if (commentsData && !commentsError) {
+        const mapped = commentsData.map((c: { id: string; content: string; created_at: string; author: { id: string; first_name: string; last_name: string; email: string } | null }) => ({
+          id: c.id,
+          content: c.content,
+          created_at: c.created_at,
+          sender: c.author?.id === ticketData?.customer_id ? 'customer' : 'agent',
+          author_name: [c.author?.first_name, c.author?.last_name].filter(Boolean).join(' ') || c.author?.email || 'User'
+        }));
+        setMessages(mapped);
       }
     } catch (error) {
       console.error('Error loading ticket:', error);
+    }
+  }, [id]);
+
+  const getConfidenceVariant = (c: number) => {
+    if (c >= 0.8) return 'default';
+    if (c >= 0.5) return 'secondary';
+    return 'destructive';
+  };
+
+  const handleAISuggest = async () => {
+    if (!ticket) return;
+    try {
+      setAiLoading(true);
+      setAiSuggestion(null);
+      const last_messages = messages.map(m => ({ role: m.sender, content: m.content })).slice(-20);
+      const orgId = ticket.organization_id || undefined;
+      const payload: { organization_id: string | undefined; last_messages: Array<{ role: string; content: string }> } = { organization_id: orgId, last_messages };
+      if (!orgId) {
+        toast({ title: 'Warning', description: 'Ticket has no organization; using limited context.', variant: 'default' });
+      }
+      const { data } = await orchestratorApi.suggestReply(payload);
+      setAiSuggestion(data);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Unexpected error';
+      toast({ title: 'AI suggestion failed', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -94,12 +152,11 @@ export default function TicketDetail() {
     
     try {
       const { error } = await supabase
-        .from('ticket_messages')
+        .from('ticket_comments')
         .insert({
           ticket_id: ticket.id,
-          content: reply,
-          sender: 'agent',
-          author_name: user?.user_metadata?.first_name || 'Agent'
+          author_id: user?.id as string,
+          content: reply
         });
 
       if (!error) {
@@ -276,16 +333,52 @@ export default function TicketDetail() {
                   onChange={(e) => setReply(e.target.value)}
                   rows={4}
                 />
-                <div className="flex items-center justify-between">
-                  <Button variant="outline" size="sm">
-                    <Paperclip className="h-4 w-4 mr-2" />
-                    Attach File
-                  </Button>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleAISuggest} disabled={aiLoading}>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {aiLoading ? 'Generating…' : 'AI Suggest Reply'}
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Paperclip className="h-4 w-4 mr-2" />
+                      Attach File
+                    </Button>
+                  </div>
                   <Button onClick={handleSendReply} disabled={!reply.trim()}>
                     <Send className="h-4 w-4 mr-2" />
                     Send Reply
                   </Button>
                 </div>
+
+                {aiSuggestion && (
+                  <div className="mt-4 rounded-lg border p-4 space-y-3 bg-card">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">AI Suggested Reply</div>
+                      <Badge variant={getConfidenceVariant(aiSuggestion.confidence)}>
+                        Confidence: {Math.round(aiSuggestion.confidence * 100)}%
+                      </Badge>
+                    </div>
+                    <div className="rounded-md bg-muted p-3 text-sm whitespace-pre-wrap">
+                      {aiSuggestion.text}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={() => setReply(aiSuggestion.text)}>Use</Button>
+                      <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(aiSuggestion.text)}>
+                        <CopyIcon className="h-4 w-4 mr-2" />Copy
+                      </Button>
+                    </div>
+                    {aiSuggestion.sources?.length ? (
+                      <div className="text-xs text-muted-foreground">
+                        Sources:
+                        <ul className="list-disc pl-5 mt-1 space-y-1">
+                          {aiSuggestion.sources.map(s => (
+                            <li key={`${s.document_id}-${s.chunk_idx || 0}`}>[S{s.index}] {s.preview}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Monitor, Smartphone, Palette, Settings } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Send } from "lucide-react";
 import { ChatAPI } from "@/services/chatApi";
 import { WidgetAPI } from "@/services/widgetApi";
+import styles from "./ChatWidget.module.css";
 
 interface ChatMessage {
   id: string;
@@ -51,14 +52,7 @@ export default function ChatWidget() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadWidgetSettings();
-      loadRecentMessages();
-    }
-  }, [user]);
-
-  const loadWidgetSettings = async () => {
+  const loadWidgetSettings = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('widget_settings')
@@ -72,9 +66,9 @@ export default function ChatWidget() {
     } catch (error) {
       console.error('Error loading widget settings:', error);
     }
-  };
+  }, [user]);
 
-  const loadRecentMessages = async () => {
+  const loadRecentMessages = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('chat_messages')
@@ -108,9 +102,16 @@ export default function ChatWidget() {
         }
       ]);
     }
-  };
+  }, [settings.greeting_message, user]);
 
-  const updateSetting = async (key: keyof WidgetSettings, value: any) => {
+  useEffect(() => {
+    if (user) {
+      loadWidgetSettings();
+      loadRecentMessages();
+    }
+  }, [user, loadWidgetSettings, loadRecentMessages]);
+
+  const updateSetting = async (key: keyof WidgetSettings, value: string | boolean | number) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     
@@ -214,9 +215,9 @@ export default function ChatWidget() {
                 <CardDescription>Live preview of your chat widget</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="aspect-video bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-8 relative overflow-hidden flex items-end justify-center" style={{paddingBottom: '0.25rem'}}>
+                <div className="aspect-video relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-8" >
                   <div className="w-full max-w-md mx-auto flex justify-center">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full h-[380px] overflow-hidden">
+                    <div className="w-full h-[380px] overflow-hidden rounded-2xl border border-slate-200 bg-white dark:bg-slate-800 shadow-2xl dark:border-slate-700">
                       <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -234,22 +235,14 @@ export default function ChatWidget() {
                         </div>
                       </div>
                       
-                      <div className="p-4 space-y-4 h-64 overflow-y-auto bg-slate-50 dark:bg-slate-900">
+                      <div className="h-64 overflow-y-auto bg-slate-50 dark:bg-slate-900 p-4 space-y-4">
                         {messages.map((message) => (
                           <div key={message.id} className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : ''}`}>
                             {message.sender === 'agent' && (
                               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex-shrink-0"></div>
                             )}
-                            <div className={`p-3 rounded-2xl shadow-sm max-w-[240px] ${
-                              message.sender === 'agent' 
-                                ? 'bg-white dark:bg-slate-800 rounded-tl-sm' 
-                                : 'bg-gradient-to-r from-blue-500 to-purple-500 rounded-tr-sm'
-                            }`}>
-                              <p className={`text-sm ${
-                                message.sender === 'agent' 
-                                  ? 'text-slate-700 dark:text-slate-300' 
-                                  : 'text-white'
-                              }`}>
+                            <div className={`${styles.chatMessage} p-3 rounded-2xl shadow-sm max-w-[240px] ${message.sender === 'agent' ? styles.agentMessage : styles.userMessage}`}>
+                              <p className={`text-sm ${message.sender === 'agent' ? 'text-slate-700 dark:text-slate-300' : 'text-white'}`}>
                                 {message.content}
                               </p>
                             </div>
@@ -264,8 +257,8 @@ export default function ChatWidget() {
                             <div className="p-3 rounded-2xl shadow-sm bg-white dark:bg-slate-800 rounded-tl-sm">
                               <div className="flex space-x-1">
                                 <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" ></div>
+                                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" ></div>
                               </div>
                             </div>
                           </div>
@@ -277,7 +270,7 @@ export default function ChatWidget() {
                         <div className="flex gap-2 items-center">
                           <div className="flex-1 relative">
                             <input 
-                              className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border-0 rounded-full text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                              className="w-full px-4 py-2 text-sm bg-slate-100 dark:bg-slate-700 border-0 rounded-full placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
                               placeholder="Type a message..."
                               value={newMessage}
                               onChange={(e) => setNewMessage(e.target.value)}
@@ -361,6 +354,7 @@ export default function ChatWidget() {
                     <Label htmlFor="theme-color">Theme Color</Label>
                     <select 
                       id="theme-color"
+                      aria-label="Theme Color"
                       value={settings.theme_color}
                       onChange={(e) => updateSetting('theme_color', e.target.value)}
                       className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
